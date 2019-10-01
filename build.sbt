@@ -2,7 +2,6 @@ val PureconfigVersion     = "0.10.2"
 val SparkVersion          = "2.4.4"
 val CatsEffectVersion     = "2.0.0"
 val LogbackVersion        = "1.2.3"
-//val Log4catsVersion       = "0.4.0-M2"
 val Log4catsVersion       = "1.0.0"
 
 import org.scalafmt.sbt.ScalafmtPlugin.autoImport._
@@ -15,9 +14,6 @@ lazy val root = (project in file(".")).
     )),
     name := "sparksftpTest",
     version := "0.0.1",
-
-    //sparkVersion := "2.4.4",
-    //sparkComponents := Seq(),
 
     javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
     javaOptions ++= Seq("-Xms512M", "-Xmx2048M", "-XX:+CMSClassUnloadingEnabled"),
@@ -40,13 +36,15 @@ lazy val root = (project in file(".")).
       //"ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
       "io.chrisdavenport" %% "log4cats-core"     % Log4catsVersion,
       "io.chrisdavenport" %% "log4cats-slf4j"     % Log4catsVersion
-    ).map(_.exclude("org.slf4j", "slf4j-log4j12")),
+    ), //.map(_.exclude("org.slf4j", "slf4j-log4j12")),
     addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),
     addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1"),
     addCompilerPlugin("org.scalamacros" % "paradise"            % "2.1.0" cross CrossVersion.full),
 
     // uses compile classpath for the run task, including "provided" jar (cf http://stackoverflow.com/a/21803413/3827)
     run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated,
+
+    runMain in Compile := Defaults.runMainTask(fullClasspath in Compile, runner in(Compile, run)).evaluated,
 
     scalacOptions ++= Seq("-deprecation", "-unchecked"),
     pomIncludeRepository := { x => false },
@@ -67,5 +65,31 @@ lazy val root = (project in file(".")).
         Some("snapshots" at nexus + "content/repositories/snapshots")
       else
         Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+    },
+
+    assemblyMergeStrategy in assembly := {
+      case PathList("org", "aopalliance", xs @ _*) => MergeStrategy.last
+      case PathList("javax", "inject", xs @ _*) => MergeStrategy.last
+      case PathList("javax", "servlet", xs @ _*) => MergeStrategy.last
+      case PathList("javax", "activation", xs @ _*) => MergeStrategy.last
+      case PathList("org", "apache", xs @ _*) => MergeStrategy.last
+      case PathList("com", "google", xs @ _*) => MergeStrategy.last
+      case PathList("com", "esotericsoftware", xs @ _*) => MergeStrategy.last
+      case PathList("com", "codahale", xs @ _*) => MergeStrategy.last
+      case PathList("com", "yammer", xs @ _*) => MergeStrategy.last
+      case "about.html" => MergeStrategy.rename
+      case "META-INF/ECLIPSEF.RSA" => MergeStrategy.last
+      case "META-INF/mailcap" => MergeStrategy.last
+      case "META-INF/mimetypes.default" => MergeStrategy.last
+      case "plugin.properties" => MergeStrategy.last
+      case "log4j.properties" => MergeStrategy.last
+      case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+      case "META-INF/versions/9/module-info.class" => MergeStrategy.last
+      case "plugin.xml" => MergeStrategy.last
+      //case x =>
+      //  val oldStrategy = (assemblyMergeStrategy in assembly).value
+      //  oldStrategy(x)
+      case x => MergeStrategy.last
     }
+
   )
