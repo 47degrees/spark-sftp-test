@@ -36,7 +36,10 @@ lazy val root = (project in file(".")).
       //"ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
       "io.chrisdavenport" %% "log4cats-core"     % Log4catsVersion,
       "io.chrisdavenport" %% "log4cats-slf4j"     % Log4catsVersion
-    ), //.map(_.exclude("org.slf4j", "slf4j-log4j12")),
+    ).map(_.exclude("org.slf4j", "slf4j-log4j12")
+      .exclude("org.slf4j", "log4j-api")
+      .exclude("org.slf4j", "log4j-slf4j-impl")
+    ),
     addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),
     addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1"),
     addCompilerPlugin("org.scalamacros" % "paradise"            % "2.1.0" cross CrossVersion.full),
