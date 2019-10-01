@@ -1,9 +1,13 @@
 val PureconfigVersion     = "0.10.2"
 val SparkVersion          = "2.4.4"
 val CatsEffectVersion     = "2.0.0"
+val LogbackVersion        = "1.2.3"
+//val Log4catsVersion       = "0.4.0-M2"
+val Log4catsVersion       = "1.0.0"
+
+import org.scalafmt.sbt.ScalafmtPlugin.autoImport._
 
 lazy val root = (project in file(".")).
-
   settings(
     inThisBuild(List(
       organization := "org.47deg",
@@ -16,7 +20,7 @@ lazy val root = (project in file(".")).
     //sparkComponents := Seq(),
 
     javacOptions ++= Seq("-source", "1.8", "-target", "1.8"),
-    javaOptions ++= Seq("-Xms512M", "-Xmx2048M", "-XX:MaxPermSize=2048M", "-XX:+CMSClassUnloadingEnabled"),
+    javaOptions ++= Seq("-Xms512M", "-Xmx2048M", "-XX:+CMSClassUnloadingEnabled"),
     scalacOptions ++= Seq("-deprecation", "-unchecked"),
     parallelExecution in Test := false,
     fork := true,
@@ -28,12 +32,15 @@ lazy val root = (project in file(".")).
       "org.apache.spark" %% "spark-sql" % SparkVersion % "provided",
       "com.github.pureconfig" %% "pureconfig"  %  PureconfigVersion,
       "org.typelevel" %% "cats-effect" % CatsEffectVersion,
-      "org.fortysevendeg" %% "spark-sftp" % "1.1.6-SNAPSHOT",
+      "org.fortysevendeg" %% "spark-sftp" % "1.1.7-SNAPSHOT",
       "org.apache.spark" %% "spark-hive" % "2.4.4",
       "org.scalatest" %% "scalatest" % "3.0.1" % "test",
       "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
-      "com.holdenkarau" %% "spark-testing-base" % "2.4.3_0.12.0" % "test"
-    ),
+      "com.holdenkarau" %% "spark-testing-base" % "2.4.3_0.12.0" % "test",
+      //"ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
+      "io.chrisdavenport" %% "log4cats-core"     % Log4catsVersion,
+      "io.chrisdavenport" %% "log4cats-slf4j"     % Log4catsVersion
+    ).map(_.exclude("org.slf4j", "slf4j-log4j12")),
     addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),
     addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1"),
     addCompilerPlugin("org.scalamacros" % "paradise"            % "2.1.0" cross CrossVersion.full),

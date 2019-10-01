@@ -5,6 +5,7 @@ import scala.language.existentials
 object RegisterInKryo {
 
   lazy val classes = List(
+    "org.apache.spark.sql.types.IntegerType$".mkClass,
     "org.apache.spark.sql.types.NullType$".mkClass,
     classOf[Array[org.apache.spark.sql.types.DataType]],
     classOf[scala.collection.mutable.WrappedArray.ofRef[_]],
