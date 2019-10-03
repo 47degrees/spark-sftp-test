@@ -1,5 +1,6 @@
 val PureconfigVersion     = "0.10.2"
-val SparkVersion          = "2.4.4"
+val SparkVersion          = "2.4.3" //To be compatible with GCloud Dataproc latest image versionscompile
+
 val CatsEffectVersion     = "2.0.0"
 val LogbackVersion        = "1.2.3"
 val Log4catsVersion       = "1.0.0"
@@ -9,8 +10,9 @@ import org.scalafmt.sbt.ScalafmtPlugin.autoImport._
 lazy val root = (project in file(".")).
   settings(
     inThisBuild(List(
-      organization := "org.47deg",
-      scalaVersion := "2.12.8"
+      organization := "org.fortysevendeg",
+      //scalaVersion := "2.12.10",
+      scalaVersion := "2.11.12"
     )),
     name := "sparksftpTest",
     version := "0.0.1",
@@ -24,27 +26,47 @@ lazy val root = (project in file(".")).
     coverageHighlighting := true,
 
     libraryDependencies ++= Seq(
+      "org.apache.spark"  %% "spark-core"     % SparkVersion % "provided",
       "org.apache.spark" %% "spark-streaming" % SparkVersion % "provided",
       "org.apache.spark" %% "spark-sql" % SparkVersion % "provided",
+      "org.apache.spark" %% "spark-hive" % SparkVersion,
+
       "com.github.pureconfig" %% "pureconfig"  %  PureconfigVersion,
       "org.typelevel" %% "cats-effect" % CatsEffectVersion,
-      "org.fortysevendeg" %% "spark-sftp" % "1.1.7-SNAPSHOT",
-      "org.apache.spark" %% "spark-hive" % "2.4.4",
-      "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
-      "com.holdenkarau" %% "spark-testing-base" % "2.4.3_0.12.0" % "test",
-      //"ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
-      "io.chrisdavenport" %% "log4cats-core"     % Log4catsVersion,
-      "io.chrisdavenport" %% "log4cats-slf4j"     % Log4catsVersion
-    ).map(_.exclude("org.slf4j", "slf4j-log4j12")
-      .exclude("org.slf4j", "log4j-api")
-      .exclude("org.slf4j", "log4j-slf4j-impl")
+      //"org.fortysevendeg" %% "spark-sftp" % "1.1.7-SNAPSHOT",
+      "io.netty" % "netty-all" % "4.1.17.Final",
+      "org.scalatest" %% "scalatest" % "3.0.8" % "test",
+      "org.scalacheck" %% "scalacheck" % "1.14.1" % "test",
+      "org.apache.spark" %% "spark-hive"       % SparkVersion % "test",
+      "org.slf4j" % "slf4j-api" % "1.7.27",
+      //"org.slf4j" %% "slf4j-log4j12" % "1.7.27",
+      "ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
+      "ch.qos.logback"  %  "logback-core"     % LogbackVersion,
+      //"io.chrisdavenport" %% "log4cats-core"     % Log4catsVersion,
+      //"io.chrisdavenport" %% "log4cats-slf4j"     % Log4catsVersion,
+
+      // ).map(_.exclude("org.slf4j", "slf4j-log4j12")
+   //   .exclude("org.slf4j", "log4j-api")
+      //.exclude("org.slf4j", "log4j-slf4j-impl")
     ),
     addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),
     addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1"),
     addCompilerPlugin("org.scalamacros" % "paradise"            % "2.1.0" cross CrossVersion.full),
 
-    // uses compile classpath for the run task, including "provided" jar (cf http://stackoverflow.com/a/21803413/3827)
+
+    //unmanagedBase in (Compile, runMain) := baseDirectory.value / "home" / "mendezr" / "development" / "hadoop-2.9.2" / "share" / "hadoop" / "common" / "lib",
+    unmanagedBase in (Compile, runMain) := baseDirectory.value / "home" / "mendezr" / "development" / "hadoop-2.9.2" / "share" / "hadoop" / "common" / "lib",
+
+    //dependencyOverrides += "io.netty" %% "netty-all" % "4.1.17-Final",
+    //dependencyOverrides += "io.netty" %% "netty" % "3.7.0-Final",
+
+    //dependencyOverrides += "org.scala-lang" % "scala-compiler" % scalaVersion.value,
+    //dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-core" % "2.6.7",
+    //dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.7",
+    //dependencyOverrides += "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.6.7",
+
+
+// uses compile classpath for the run task, including "provided" jar (cf http://stackoverflow.com/a/21803413/3827)
     run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated,
 
     runMain in Compile := Defaults.runMainTask(fullClasspath in Compile, runner in(Compile, run)).evaluated,
@@ -80,19 +102,31 @@ lazy val root = (project in file(".")).
       case PathList("com", "esotericsoftware", xs @ _*) => MergeStrategy.last
       case PathList("com", "codahale", xs @ _*) => MergeStrategy.last
       case PathList("com", "yammer", xs @ _*) => MergeStrategy.last
+      case PathList("org", "slf4j", xs @ _*) => MergeStrategy.last
+      case PathList("stax", "stax-apis", xs @ _*) => MergeStrategy.last
+      case PathList("org", "apache", "parquet", xs @ _*) => MergeStrategy.last
+      case PathList("org", "apache", "arrow", xs @ _*) => MergeStrategy.last
+      case PathList("org", "objenesis", xs @ _*) => MergeStrategy.last
+      case PathList("io", "netty", xs @ _*) => MergeStrategy.first
+      case PathList("javax","xml", xs @ _*) => MergeStrategy.last
+      case PathList("javax","xml","stream", xs @ _*) => MergeStrategy.last
       case "about.html" => MergeStrategy.rename
       case "META-INF/ECLIPSEF.RSA" => MergeStrategy.last
       case "META-INF/mailcap" => MergeStrategy.last
       case "META-INF/mimetypes.default" => MergeStrategy.last
       case "plugin.properties" => MergeStrategy.last
       case "log4j.properties" => MergeStrategy.last
-      case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+      case "git.properties" => MergeStrategy.last
+      case "parquet.thrift" => MergeStrategy.last
+      case "codegen/config.fmpp" => MergeStrategy.last
+      //case "META-INF/MANIFEST.MF" => MergeStrategy.discard
+      //case PathList("META-INF", xs @ _*) => MergeStrategy.discard
       case "META-INF/versions/9/module-info.class" => MergeStrategy.last
       case "plugin.xml" => MergeStrategy.last
-      //case x =>
-      //  val oldStrategy = (assemblyMergeStrategy in assembly).value
-      //  oldStrategy(x)
-      case x => MergeStrategy.last
+      case x =>
+        val oldStrategy = (assemblyMergeStrategy in assembly).value
+        oldStrategy(x)
+      //case x => MergeStrategy.last
     }
 
   )
