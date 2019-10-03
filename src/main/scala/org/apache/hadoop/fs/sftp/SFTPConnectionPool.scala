@@ -30,46 +30,42 @@ import org.apache.hadoop.fs.sftp.SFTPConnectionPool.ConnectionInfo
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-
-
-
 /** Concurrent/Multiple Connections. */
-
 object SFTPConnectionPool {
 
   val LOG: Log = LogFactory.getLog(classOf[SFTPFileSystem])
+
   /**
    * Class to capture the minimal set of information that distinguish
    * between different connections.
    */
-
-  private[sftp]  class ConnectionInfo private[sftp]   (val hst: String, var port: Int, val usr: String ) {
+  private[sftp] class ConnectionInfo private[sftp] (
+      val hst: String,
+      var port: Int,
+      val usr: String
+  ) {
 
     private var host = ""
     private var user = ""
     this.host = hst
     this.user = usr
-    def getHost: String = host
-    def setHost(hst: String): Unit =  { this.host = hst
-    }
-    def getPort: Int = port
-    def setPort(prt: Int): Unit =  { this.port = prt
-    }
-    def getUser: String = user
-    def setUser(usr: String): Unit =  { this.user = usr
-    }
+    def getHost: String            = host
+    def setHost(hst: String): Unit = this.host = hst
+    def getPort: Int               = port
+    def setPort(prt: Int): Unit    = this.port = prt
+    def getUser: String            = user
+    def setUser(usr: String): Unit = this.user = usr
 
     def canEqual(a: Any) = a.isInstanceOf[ConnectionInfo]
 
-    override def equals(obj: Any): Boolean =  {
+    override def equals(obj: Any): Boolean = {
 
       obj match {
-        case obj: ConnectionInfo =>  {
+        case obj: ConnectionInfo => {
           obj.canEqual(this) &&
-            (!this.host.isEmpty && this.host.equalsIgnoreCase(obj.host)) &&
-            (!this.user.isEmpty && this.user.equalsIgnoreCase(obj.user)) &&
-            (this.port >=0 && this.port == obj.port )
+          (!this.host.isEmpty && this.host.equalsIgnoreCase(obj.host)) &&
+          (!this.user.isEmpty && this.user.equalsIgnoreCase(obj.user)) &&
+          (this.port >= 0 && this.port == obj.port)
         }
         case _ => false
       }
@@ -85,7 +81,8 @@ object SFTPConnectionPool {
 //      }
 //      else false
     }
-    override def hashCode: Int =  { var hashCode = 0
+    override def hashCode: Int = {
+      var hashCode = 0
       if (host != null) hashCode += host.hashCode
       hashCode += port
       if (user != null) hashCode += user.hashCode
@@ -93,27 +90,29 @@ object SFTPConnectionPool {
     }
   }
 }
-class SFTPConnectionPool private[sftp]   (// Maximum number of allowed live connections. This doesn't mean we cannot
-                                          // have more live connections. It means that when we have more
-                                          // live connections than this threshold, any unused connection will be
-                                          // closed.
-                                          var maxConnection: Int ) {
+class SFTPConnectionPool private[sftp] ( // Maximum number of allowed live connections. This doesn't mean we cannot
+    // have more live connections. It means that when we have more
+    // live connections than this threshold, any unused connection will be
+    // closed.
+    var maxConnection: Int
+) {
 
   import SFTPConnectionPool._
 
   private var liveConnectionCount = 0
-  private var idleConnections = new util.HashMap[ConnectionInfo, util.HashSet[ChannelSftp]]
-  private var con2infoMap = new util.HashMap[ChannelSftp, ConnectionInfo]
+  private var idleConnections     = new util.HashMap[ConnectionInfo, util.HashSet[ChannelSftp]]
+  private var con2infoMap         = new util.HashMap[ChannelSftp, ConnectionInfo]
   @throws[IOException]
-  private[sftp]  def getFromPool(info: ConnectionInfo): ChannelSftp =  { val cons = idleConnections.get(info)
-    var channel:ChannelSftp = null
-    if (cons != null && cons.size > 0)  { val it = cons.iterator
-      if (it.hasNext)  {
+  private[sftp] def getFromPool(info: ConnectionInfo): ChannelSftp = {
+    val cons                 = idleConnections.get(info)
+    var channel: ChannelSftp = null
+    if (cons != null && cons.size > 0) {
+      val it = cons.iterator
+      if (it.hasNext) {
         channel = it.next
         idleConnections.remove(info)
         return channel
-      }
-      else throw new IOException("Connection pool error.")
+      } else throw new IOException("Connection pool error.")
     }
     null
   }
@@ -121,58 +120,71 @@ class SFTPConnectionPool private[sftp]   (// Maximum number of allowed live conn
   /** Add the channel into pool.
    * @param channel
    */
-
-  private[sftp]  def returnToPool(channel: ChannelSftp): Unit =  { val info = con2infoMap.get(channel)
+  private[sftp] def returnToPool(channel: ChannelSftp): Unit = {
+    val info = con2infoMap.get(channel)
     var cons = idleConnections.get(info)
-    if (cons == null)  { cons = new util.HashSet[ChannelSftp]
+    if (cons == null) {
+      cons = new util.HashSet[ChannelSftp]
       idleConnections.put(info, cons)
     }
     cons.add(channel)
   }
-  /** Shutdown the connection pool and close all open connections. */
 
-  private[sftp]  def shutdown(): Unit =  { if (this.con2infoMap == null) return // already shutdown in case it is called
+  /** Shutdown the connection pool and close all open connections. */
+  private[sftp] def shutdown(): Unit = {
+    if (this.con2infoMap == null) return // already shutdown in case it is called
     SFTPConnectionPool.LOG.info("Inside shutdown, con2infoMap size=" + con2infoMap.size)
     this.maxConnection = 0
     val cons = con2infoMap.keySet
-    if (cons != null && cons.size > 0)  { // make a copy since we need to modify the underlying Map
+    if (cons != null && cons.size > 0) { // make a copy since we need to modify the underlying Map
       val copy = new util.HashSet[ChannelSftp](cons)
       // Initiate disconnect from all outstanding connections
       import scala.collection.JavaConversions._
-      for (con <- copy)  { try disconnect(con)
-      catch {
-        case ioe: IOException =>
-          val info = con2infoMap.get(con)
-          SFTPConnectionPool.LOG.error("Error encountered while closing connection to " + info.getHost, ioe)
-      }
+      for (con <- copy) {
+        try disconnect(con)
+        catch {
+          case ioe: IOException =>
+            val info = con2infoMap.get(con)
+            SFTPConnectionPool.LOG
+              .error("Error encountered while closing connection to " + info.getHost, ioe)
+        }
       }
     }
     // make sure no further connections can be returned.
     this.idleConnections = null
     this.con2infoMap = null
   }
-  def getMaxConnection: Int = maxConnection
-  def setMaxConnection(maxConn: Int): Unit =  { this.maxConnection = maxConn
-  }
+  def getMaxConnection: Int                = maxConnection
+  def setMaxConnection(maxConn: Int): Unit = this.maxConnection = maxConn
   @throws[IOException]
-  def connect(host: String, port: Int, user: String, password: String, keyFile: String): ChannelSftp =  { // get connection from pool
-    val info = new ConnectionInfo(host, port, user)
+  def connect(
+      host: String,
+      port: Int,
+      user: String,
+      password: String,
+      keyFile: String
+  ): ChannelSftp = { // get connection from pool
+    val info    = new ConnectionInfo(host, port, user)
     var channel = getFromPool(info)
-    if (channel != null) if (channel.isConnected) return channel
-    else  { channel = null
-      this.synchronized {
-        liveConnectionCount -= 1
-        con2infoMap.remove(channel)
+    if (channel != null)
+      if (channel.isConnected) return channel
+      else {
+        channel = null
+        this.synchronized {
+          liveConnectionCount -= 1
+          con2infoMap.remove(channel)
+        }
       }
-    }
     // create a new connection and add to pool
-    val jsch = new JSch
+    val jsch                             = new JSch
     var session: com.jcraft.jsch.Session = null
     try {
-      val user2:String = if (user == null || user.length == 0) System.getProperty("user.name") else user
-      val password2:String = if (password == null)  "" else password
+      val user2: String =
+        if (user == null || user.length == 0) System.getProperty("user.name") else user
+      val password2: String = if (password == null) "" else password
       if (keyFile != null && keyFile.length > 0) jsch.addIdentity(keyFile)
-      if (port <= 0) session = jsch.getSession(user2, host) else session = jsch.getSession(user2, host, port)
+      if (port <= 0) session = jsch.getSession(user2, host)
+      else session = jsch.getSession(user2, host, port)
       session.setPassword(password2)
       val config = new Properties
       config.put("StrictHostKeyChecking", "no")
@@ -183,33 +195,35 @@ class SFTPConnectionPool private[sftp]   (// Maximum number of allowed live conn
       this synchronized con2infoMap.put(channel, info)
       liveConnectionCount += 1
 
-      channel} catch {
+      channel
+    } catch {
       case e: JSchException =>
         throw new IOException(StringUtils.stringifyException(e))
     }
   }
   @throws[IOException]
-  private[sftp]  def disconnect(channel: ChannelSftp): Unit =  { if (channel != null)  { // close connection if too many active connections
-    var closeConnection = false
-    this.synchronized {
-      if (liveConnectionCount > maxConnection) {
-        liveConnectionCount -= 1
-        con2infoMap.remove(channel)
-        closeConnection = true
+  private[sftp] def disconnect(channel: ChannelSftp): Unit = {
+    if (channel != null) { // close connection if too many active connections
+      var closeConnection = false
+      this.synchronized {
+        if (liveConnectionCount > maxConnection) {
+          liveConnectionCount -= 1
+          con2infoMap.remove(channel)
+          closeConnection = true
+        }
       }
-    }
 
-    if (closeConnection) if (channel.isConnected) try {
-      val session = channel.getSession
-      channel.disconnect()
-      session.disconnect()} catch {
-      case e: JSchException =>
-        throw new IOException(StringUtils.stringifyException(e))
+      if (closeConnection) if (channel.isConnected) try {
+        val session = channel.getSession
+        channel.disconnect()
+        session.disconnect()
+      } catch {
+        case e: JSchException =>
+          throw new IOException(StringUtils.stringifyException(e))
+      } else returnToPool(channel)
     }
-    else returnToPool(channel)
   }
-  }
-  def getIdleCount: Int = this.idleConnections.size
+  def getIdleCount: Int     = this.idleConnections.size
   def getLiveConnCount: Int = this.liveConnectionCount
-  def getConnPoolSize: Int = this.con2infoMap.size
+  def getConnPoolSize: Int  = this.con2infoMap.size
 }
