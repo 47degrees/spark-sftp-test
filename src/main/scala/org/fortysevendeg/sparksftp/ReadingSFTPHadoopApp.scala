@@ -26,8 +26,9 @@ object ReadingSFTPHadoopApp extends IOApp {
           "spark.kryo.registrationRequired",
           config.spark.serializer.contains("KryoSerializer").toString
         )
-        .set("spark.hadoop.fs.sftp.impl", "org.apache.hadoop.fs.sftp.SFTPFileSystem")
+        //.set("spark.hadoop.fs.sftp.impl", "org.apache.hadoop.fs.sftp.SFTPFileSystem")
         .set("fs.sftp.impl", "org.apache.hadoop.fs.sftp.SFTPFileSystem")
+        //.set("fs.sftp.impl", "com.ibm.biginsights.hadoop.fs.sftp.SFTPFileSystem")
         .set("fs.sftp.proxy.host", config.sftp.sftpHost)
         .set("fs.sftp.host", config.sftp.sftpHost)
         .set("fs.sftp.user", config.sftp.sftpUser)
@@ -101,7 +102,7 @@ object ReadingSFTPHadoopApp extends IOApp {
         //    option("multiLine", multiLine).
         .option("inferSchema", inferSchema)
         .csv(sourceUri.toString)
-        .repartition(config.spark.partitions)
+        //.repartition(config.spark.partitions)
 
       _ = df.printSchema()
       _ = println(s"##############COUNT: ${df.count()}")

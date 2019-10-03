@@ -4,6 +4,7 @@ val SparkVersion          = "2.4.3" //To be compatible with GCloud Dataproc late
 val CatsEffectVersion     = "2.0.0"
 val LogbackVersion        = "1.2.3"
 val Log4catsVersion       = "1.0.0"
+val HadoopVersion         = "2.9.2"
 
 import org.scalafmt.sbt.ScalafmtPlugin.autoImport._
 
@@ -30,10 +31,11 @@ lazy val root = (project in file(".")).
       "org.apache.spark" %% "spark-streaming" % SparkVersion % "provided",
       "org.apache.spark" %% "spark-sql" % SparkVersion % "provided",
       "org.apache.spark" %% "spark-hive" % SparkVersion,
-
+      "org.apache.hadoop" % "hadoop-common" % HadoopVersion,
       "com.github.pureconfig" %% "pureconfig"  %  PureconfigVersion,
       "org.typelevel" %% "cats-effect" % CatsEffectVersion,
       //"org.fortysevendeg" %% "spark-sftp" % "1.1.7-SNAPSHOT",
+      "com.springml" % "spark-sftp_2.11" % "1.1.4",
       "io.netty" % "netty-all" % "4.1.17.Final",
       "org.scalatest" %% "scalatest" % "3.0.8" % "test",
       "org.scalacheck" %% "scalacheck" % "1.14.1" % "test",
