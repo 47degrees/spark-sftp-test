@@ -88,9 +88,9 @@ object ReadingSFTPHadoopApp extends IOApp {
       //TODO: Test reading zip, and multiple files in a directory.
       //TODO: Test reading by partitions in parallel.
 
-      _ = println(
-        s"sourceUri $sourceUri, getPath ${sourceUri.getPath}, sourceUri.toString ${sourceUri.toString}"
-      )
+//      _ = println(
+//        s"sourceUri $sourceUri, getPath ${sourceUri.getPath}, sourceUri.toString ${sourceUri.toString}"
+//      )
 
       df = sparkSession.read
         .option("header", first_row_is_header)
