@@ -46,7 +46,6 @@ object ReadingSFTPConnectorApp extends IOApp {
         .option("delimiter", "|")
         .option("inferSchema", "true")
         .load("/tmp/spark/sample.psv")
-      //.repartition(config.spark.partitions)
 
       //Testing the content of the dataframe, the time in doing the count can be using to measure time in reading.
       _ = data.printSchema()
@@ -78,8 +77,7 @@ object ReadingSFTPConnectorApp extends IOApp {
 
       // Other steps to do after the processing.
       // Write dataframe as CSV file to FTP server
-      _ = dataFromHive
-        .write
+      _ = dataFromHive.write
         .format("com.springml.spark.sftp")
         .option("host", config.sftp.sftpHost)
         .option("username", config.sftp.sftpUser)

@@ -4,7 +4,7 @@ import java.net.URI
 
 import pureconfig.generic.auto._
 import cats.effect.{ExitCode, IO, IOApp}
-import org.apache.spark.{SparkConf, SparkFiles}
+import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.fortysevendeg.sparksftp.common.RegisterInKryo
 import org.fortysevendeg.sparksftp.config.model.configs.ReadingSFTPConfig
@@ -26,9 +26,7 @@ object ReadingSFTPHadoopApp extends IOApp {
           "spark.kryo.registrationRequired",
           config.spark.serializer.contains("KryoSerializer").toString
         )
-        //.set("spark.hadoop.fs.sftp.impl", "org.apache.hadoop.fs.sftp.SFTPFileSystem")
         .set("fs.sftp.impl", "org.apache.hadoop.fs.sftp.SFTPFileSystem")
-        //.set("fs.sftp.impl", "com.ibm.biginsights.hadoop.fs.sftp.SFTPFileSystem")
         .set("fs.sftp.proxy.host", config.sftp.sftpHost)
         .set("fs.sftp.host", config.sftp.sftpHost)
         .set("fs.sftp.user", config.sftp.sftpUser)
@@ -46,12 +44,10 @@ object ReadingSFTPHadoopApp extends IOApp {
 //      sftpPass = sys.props.get("spark.executorEnv.SFTP_PASS")
 //      sftpHost = sys.props.get("spark.executorEnv.SFTP_HOST")
 //      sftpPath = sys.props.get("spark.executorEnv.SFTP_PATH")
-//
 //      _ = println(s"$sftpUser, $sftpPass, $sftpHost, $sftpPath")
+//      sftpUri = s"sftp://${sftpUser}:${sftpPass}@${sftpHost}" + s":${sftpPath}"
 
-      //sftpUri = s"sftp://${sftpUser}:${sftpPass}@${sftpHost}" + s":${sftpPath}"
-
-      //      sftpUser = sys.props.getOrElse("spark.sftp.SFTP_USER", config.sftp.sftpUser)
+//      sftpUser = sys.props.getOrElse("spark.sftp.SFTP_USER", config.sftp.sftpUser)
 //      sftpPass = sys.props.getOrElse("spark.sftp.SFTP_PASS", config.sftp.sftpPass)
 //      sftpHost = sys.props.getOrElse("spark.sftp.SFTP_HOST", config.sftp.sftpHost)
 //      sftpPath = sys.props.getOrElse("spark.sftp.SFTP_PATH", config.sftp.sftpPath)
@@ -68,11 +64,6 @@ object ReadingSFTPHadoopApp extends IOApp {
       sftpPath1 = sparkSession.sparkContext.getConf
         .getOption("spark.sftp.SFTP_PATH")
         .getOrElse(config.sftp.sftpPath)
-
-//      sftpUser1 = sparkSession.sparkContext.getConf.get("spark.executorEnv.SFTP_USER")
-//      sftpPass1 = sparkSession.sparkContext.getConf.get("spark.executorEnv.SFTP_PASS")
-//      sftpHost1 = sparkSession.sparkContext.getConf.get("spark.executorEnv.SFTP_HOST")
-//      sftpPath1 = sparkSession.sparkContext.getConf.get("spark.executorEnv.SFTP_PATH")
 
       _ = println(s"$sftpUser1, $sftpPass1, $sftpHost1, $sftpPath1")
 
@@ -109,7 +100,6 @@ object ReadingSFTPHadoopApp extends IOApp {
         //    option("multiLine", multiLine).
         .option("inferSchema", inferSchema)
         .csv(sourceUri.toString)
-      //.repartition(config.spark.partitions)
 
       _ = df.printSchema()
       _ = println(s"##############COUNT: ${df.count()}")
@@ -122,7 +112,4 @@ object ReadingSFTPHadoopApp extends IOApp {
       exitCode = ExitCode.Success
 
     } yield exitCode
-
-  //run(List.empty).unsafeRunSync()
-
 }

@@ -1,5 +1,5 @@
 val PureconfigVersion     = "0.10.2"
-val SparkVersion          = "2.4.3" //To be compatible with GCloud Dataproc latest image versionscompile
+val SparkVersion          = "2.4.3" //To be compatible with GCloud Dataproc latest image
 
 val CatsEffectVersion     = "2.0.0"
 val LogbackVersion        = "1.2.3"
@@ -46,27 +46,15 @@ lazy val root = (project in file(".")).
       "ch.qos.logback"  %  "logback-core"     % LogbackVersion,
       //"io.chrisdavenport" %% "log4cats-core"     % Log4catsVersion,
       //"io.chrisdavenport" %% "log4cats-slf4j"     % Log4catsVersion,
-
-      // ).map(_.exclude("org.slf4j", "slf4j-log4j12")
-   //   .exclude("org.slf4j", "log4j-api")
+      //).map(_.exclude("org.slf4j", "slf4j-log4j12")
+      //.exclude("org.slf4j", "log4j-api")
       //.exclude("org.slf4j", "log4j-slf4j-impl")
     ),
     addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),
     addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1"),
     addCompilerPlugin("org.scalamacros" % "paradise"            % "2.1.0" cross CrossVersion.full),
 
-
-    //unmanagedBase in (Compile, runMain) := baseDirectory.value / "home" / "mendezr" / "development" / "hadoop-2.9.2" / "share" / "hadoop" / "common" / "lib",
-    unmanagedBase in (Compile, runMain) := baseDirectory.value / "home" / "mendezr" / "development" / "hadoop-2.9.2" / "share" / "hadoop" / "common" / "lib",
-
-    //dependencyOverrides += "io.netty" %% "netty-all" % "4.1.17-Final",
-    //dependencyOverrides += "io.netty" %% "netty" % "3.7.0-Final",
-
-    //dependencyOverrides += "org.scala-lang" % "scala-compiler" % scalaVersion.value,
-    //dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-core" % "2.6.7",
-    //dependencyOverrides += "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.7",
-    //dependencyOverrides += "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.6.7",
-
+    //unmanagedBase in (Compile, runMain) := baseDirectory.value / "home" / "mendezr" / "development" / "hadoop-2.9.2" / "share" / "hadoop" / "common" / "lib"
 
 // uses compile classpath for the run task, including "provided" jar (cf http://stackoverflow.com/a/21803413/3827)
     run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated,
@@ -121,8 +109,6 @@ lazy val root = (project in file(".")).
       case "git.properties" => MergeStrategy.last
       case "parquet.thrift" => MergeStrategy.last
       case "codegen/config.fmpp" => MergeStrategy.last
-      //case "META-INF/MANIFEST.MF" => MergeStrategy.discard
-      //case PathList("META-INF", xs @ _*) => MergeStrategy.discard
       case "META-INF/versions/9/module-info.class" => MergeStrategy.last
       case "plugin.xml" => MergeStrategy.last
       case x =>
