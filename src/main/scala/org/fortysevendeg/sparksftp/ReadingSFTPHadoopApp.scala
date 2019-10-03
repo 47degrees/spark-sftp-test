@@ -65,7 +65,7 @@ object ReadingSFTPHadoopApp extends IOApp {
         .getOption("spark.sftp.SFTP_PATH")
         .getOrElse(config.sftp.sftpPath)
 
-      _ = println(s"$sftpUser1, $sftpPass1, $sftpHost1, $sftpPath1")
+      _ = println(s"$sftpUser1, $sftpHost1, $sftpPath1")
 
       sftpUri = s"sftp://${sftpUser1}:${sftpPass1}@${sftpHost1}" + s":${sftpPath1}"
 
