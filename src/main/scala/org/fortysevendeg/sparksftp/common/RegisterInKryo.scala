@@ -5,6 +5,10 @@ import scala.language.existentials
 object RegisterInKryo {
 
   lazy val classes = List(
+    classOf[org.apache.spark.sql.execution.datasources.BasicWriteTaskStats],
+    classOf[org.apache.spark.sql.execution.datasources.ExecutedWriteSummary],
+    "org.apache.spark.internal.io.FileCommitProtocol$TaskCommitMessage".mkClass,
+    classOf[org.apache.spark.sql.execution.datasources.WriteTaskResult],
     "org.apache.spark.sql.types.IntegerType$".mkClass,
     "org.apache.spark.sql.types.NullType$".mkClass,
     classOf[Array[org.apache.spark.sql.types.DataType]],

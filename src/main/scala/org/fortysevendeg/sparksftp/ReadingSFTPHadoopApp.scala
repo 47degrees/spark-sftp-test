@@ -42,7 +42,6 @@ object ReadingSFTPHadoopApp extends IOApp {
         .enableHiveSupport
         .getOrCreate()
 
-
 //      sftpUser = sys.props.get("spark.executorEnv.SFTP_USER")
 //      sftpPass = sys.props.get("spark.executorEnv.SFTP_PASS")
 //      sftpHost = sys.props.get("spark.executorEnv.SFTP_HOST")
@@ -52,16 +51,23 @@ object ReadingSFTPHadoopApp extends IOApp {
 
       //sftpUri = s"sftp://${sftpUser}:${sftpPass}@${sftpHost}" + s":${sftpPath}"
 
-
       //      sftpUser = sys.props.getOrElse("spark.sftp.SFTP_USER", config.sftp.sftpUser)
 //      sftpPass = sys.props.getOrElse("spark.sftp.SFTP_PASS", config.sftp.sftpPass)
 //      sftpHost = sys.props.getOrElse("spark.sftp.SFTP_HOST", config.sftp.sftpHost)
 //      sftpPath = sys.props.getOrElse("spark.sftp.SFTP_PATH", config.sftp.sftpPath)
 
-      sftpUser1 = sparkSession.sparkContext.getConf.getOption("spark.sftp.SFTP_USER").getOrElse(config.sftp.sftpUser)
-      sftpPass1 = sparkSession.sparkContext.getConf.getOption("spark.sftp.SFTP_PASS").getOrElse(config.sftp.sftpPass)
-      sftpHost1 = sparkSession.sparkContext.getConf.getOption("spark.sftp.SFTP_HOST").getOrElse(config.sftp.sftpHost)
-      sftpPath1 = sparkSession.sparkContext.getConf.getOption("spark.sftp.SFTP_PATH").getOrElse(config.sftp.sftpPath)
+      sftpUser1 = sparkSession.sparkContext.getConf
+        .getOption("spark.sftp.SFTP_USER")
+        .getOrElse(config.sftp.sftpUser)
+      sftpPass1 = sparkSession.sparkContext.getConf
+        .getOption("spark.sftp.SFTP_PASS")
+        .getOrElse(config.sftp.sftpPass)
+      sftpHost1 = sparkSession.sparkContext.getConf
+        .getOption("spark.sftp.SFTP_HOST")
+        .getOrElse(config.sftp.sftpHost)
+      sftpPath1 = sparkSession.sparkContext.getConf
+        .getOption("spark.sftp.SFTP_PATH")
+        .getOrElse(config.sftp.sftpPath)
 
 //      sftpUser1 = sparkSession.sparkContext.getConf.get("spark.executorEnv.SFTP_USER")
 //      sftpPass1 = sparkSession.sparkContext.getConf.get("spark.executorEnv.SFTP_PASS")
@@ -71,7 +77,6 @@ object ReadingSFTPHadoopApp extends IOApp {
       _ = println(s"$sftpUser1, $sftpPass1, $sftpHost1, $sftpPath1")
 
       sftpUri = s"sftp://${sftpUser1}:${sftpPass1}@${sftpHost1}" + s":${sftpPath1}"
-
 
       // Others way of reading, if we wanted to read as inputstreamT
       // context = sparkSession.sparkContext
@@ -92,7 +97,9 @@ object ReadingSFTPHadoopApp extends IOApp {
       //TODO: Test reading zip, and multiple files in a directory.
       //TODO: Test reading by partitions in parallel.
 
-      _ = println(s"sourceUri $sourceUri, getPath ${sourceUri.getPath}, sourceUri.toString ${sourceUri.toString}")
+      _ = println(
+        s"sourceUri $sourceUri, getPath ${sourceUri.getPath}, sourceUri.toString ${sourceUri.toString}"
+      )
 
       df = sparkSession.read
         .option("header", first_row_is_header)
@@ -102,7 +109,7 @@ object ReadingSFTPHadoopApp extends IOApp {
         //    option("multiLine", multiLine).
         .option("inferSchema", inferSchema)
         .csv(sourceUri.toString)
-        //.repartition(config.spark.partitions)
+      //.repartition(config.spark.partitions)
 
       _ = df.printSchema()
       _ = println(s"##############COUNT: ${df.count()}")
