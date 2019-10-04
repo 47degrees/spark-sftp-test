@@ -28,6 +28,7 @@ object ReadingSFTPConnectorApp extends IOApp {
           config.spark.serializer.contains("KryoSerializer").toString
         )
         .set("spark.hadoop.fs.sftp.impl", "org.apache.hadoop.fs.sftp.SFTPFileSystem")
+        .set("spark.sql.legacy.allowCreatingManagedTableUsingNonemptyLocation","true")
         .registerKryoClasses(RegisterInKryo.classes.toArray)
 
       sparkSession: SparkSession = SparkSession.builder
@@ -68,11 +69,13 @@ object ReadingSFTPConnectorApp extends IOApp {
       _ = data.show(false)
 
       // Creating databases do not work in Dataproc: https://github.com/mozafari/verdictdb/issues/163
-      //_ = if (sparkSession.catalog.databaseExists("sampledb") == false) sparkSession.sqlContext.sql("create database sampledb")
+      //_ = if (sparkSession.catalog.databaseExists("sampledb") == false) sparkSession.sqlContext.sql("create database sampledb USING HIVE")
       //_ = sparkSession.catalog.setCurrentDatabase("sampledb")
 
       // https://stackoverflow.com/questions/30664008/how-to-save-dataframe-directly-to-hive
-      _ = data.write.mode(SaveMode.Overwrite).saveAsTable("user_data")
+      _ = sparkSession.sqlContext.sql("DROP TABLE IF EXISTS user_data")
+      _ = data.write.mode(SaveMode.Overwrite).format("parquet").saveAsTable("user_data")
+
       // Other possible operations when persisting
       // data.select(df.col("col1"), df.col("col2"), df.col("col3")).write.mode("overwrite").saveAsTable("schemaName.tableName")
       // data.write.mode(SaveMode.Overwrite).saveAsTable("dbName.tableName")

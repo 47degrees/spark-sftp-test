@@ -28,28 +28,13 @@ object ReadingSFTPHadoopApp extends IOApp {
         )
         .set("fs.sftp.impl", "org.apache.hadoop.fs.sftpwithseek.SFTPFileSystem")
         .set("fs.sftp.impl.disable.cache", "true")
+        .set("spark.sql.legacy.allowCreatingManagedTableUsingNonemptyLocation","true") //https://kb.azuredatabricks.net/jobs/spark-overwrite-cancel.html
         .registerKryoClasses(RegisterInKryo.classes.toArray)
 
       sparkSession: SparkSession = SparkSession.builder
         .config(defaultSparkConf)
         .enableHiveSupport
         .getOrCreate()
-
-//    This "redundant" code for different ways of reading configuration values is due to an investigation of how to pass
-//    parameters and properties in a way that is both usable by spark-submit and also Google Cloud Dataproc properties.
-//      sftpUser = sys.props.get("spark.executorEnv.SFTP_USER")
-//      sftpPass = sys.props.get("spark.executorEnv.SFTP_PASS")
-//      sftpHost = sys.props.get("spark.executorEnv.SFTP_HOST")
-//      sftpPath = sys.props.get("spark.executorEnv.SFTP_PATH")
-//      _ = println(s"$sftpUser, $sftpPass, $sftpHost, $sftpPath")
-//      sftpUri = s"sftp://${sftpUser}:${sftpPass}@${sftpHost}" + s":${sftpPath}"
-
-      sftpUser = sys.props.getOrElse("spark.executorEnv.SFTP_USER", config.sftp.sftpUser)
-      sftpPass = sys.props.getOrElse("spark.executorEnv.SFTP_PASS", config.sftp.sftpPass)
-      sftpHost = sys.props.getOrElse("spark.executorEnv.SFTP_HOST", config.sftp.sftpHost)
-      sftpPath = sys.props.getOrElse("spark.executorEnv.SFTP_PATH", config.sftp.sftpPath)
-
-      _ = println(s"####From sys props: $sftpUser, $sftpHost, $sftpPath")
 
       sftpUser1 = sparkSession.sparkContext.getConf
         .getOption("spark.executorEnv.SFTP_USER")
@@ -84,23 +69,30 @@ object ReadingSFTPHadoopApp extends IOApp {
       _ = df.printSchema()
 
       //Testing the content of the dataframe, the time in doing the count can be using to measure time in reading.
+      _ = df.printSchema()
       _ = println(s"### COUNT: ${df.count()}")
       _ = df.show(false)
 
-      _ = df.write.mode(SaveMode.Overwrite).saveAsTable("user_data")
+      //_ = sparkSession.sparkContext.setLogLevel("DEBUG") //If we wanted to debug, we could use this.
+      _ = sparkSession.sqlContext.sql("DROP TABLE IF EXISTS user_data")
+      _ = df.write.mode(SaveMode.Overwrite).format("parquet").saveAsTable("user_data")
+      // TODO: Check if it still could fail with the below error or has been solved with the flag: allowCreatingManagedTableUsingNonemptyLocation
+      //  org.apache.spark.sql.catalyst.analysis.NoSuchDatabaseException: Database 'default' not found;
+      //	at org.apache.spark.sql.catalyst.catalog.SessionCatalog.org$apache$spark$sql$catalyst$catalog$SessionCatalog$$requireDbExists(SessionCatalog.scala:178)
+      //	at org.apache.spark.sql.catalyst.catalog.SessionCatalog.createTable(SessionCatalog.scala:316)
+      //	at org.apache.spark.sql.execution.command.CreateDataSourceTableAsSelectCommand.run(createDataSourceTables.scala:185)
 
       _ = sparkSession.catalog.listTables().show(truncate = false)
       _ = sparkSession.sql("show tables").show(truncate = false)
 
       // Sample operations to query the Hive database
-
       dataFromHive = sparkSession.sql("select name from user_data")
       _            = dataFromHive.show(false)
 
       // Write dataframe as CSV file to FTP server
       _ = dataFromHive.write
         .mode(SaveMode.Overwrite)
-        .csv("/tmp/spark/sample_processed.csv")
+        .csv(s"${sftpPath1}.processed.csv")
 
       exitCode = ExitCode.Success
 
