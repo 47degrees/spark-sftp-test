@@ -67,24 +67,26 @@ object ReadingSFTPConnectorApp extends IOApp {
       _ = println(s"### COUNT: ${data.count()}")
       _ = data.show(false)
 
+
+      // Creating databases do not work in Dataproc: https://github.com/mozafari/verdictdb/issues/163
+      //_ = if (sparkSession.catalog.databaseExists("sampledb") == false) sparkSession.sqlContext.sql("create database sampledb")
+      //_ = sparkSession.catalog.setCurrentDatabase("sampledb")
+
       // https://stackoverflow.com/questions/30664008/how-to-save-dataframe-directly-to-hive
-      _ = if (sparkSession.catalog.databaseExists("sampledb") == false)
-        sparkSession.sqlContext.sql("create database sampledb")
-      _ = data.write.mode(SaveMode.Overwrite).saveAsTable("sampledb.user_data")
+      _ = data.write.mode(SaveMode.Overwrite).saveAsTable("user_data")
       // Other possible operations when persisting
       // data.select(df.col("col1"), df.col("col2"), df.col("col3")).write.mode("overwrite").saveAsTable("schemaName.tableName")
       // data.write.mode(SaveMode.Overwrite).saveAsTable("dbName.tableName")
 
       // Some other sample operations with databases and tables
       _ = sparkSession.catalog.listDatabases().show(truncate = false)
-      _ = sparkSession.catalog.setCurrentDatabase("sampledb")
       _ = sparkSession.catalog.listTables().show(truncate = false)
       _ = sparkSession.sql("show tables").show(truncate = false)
 
       // Sample operations to query the Hive database
       // dataFromHive = sparkSession.sql("select * from sampledb.user_data")
       // justName = dataFromHive.select("name")
-      dataFromHive = sparkSession.sql("select name from sampledb.user_data")
+      dataFromHive = sparkSession.sql("select name from user_data")
       _            = dataFromHive.show(false)
 
       // Write dataframe as CSV file to FTP server
