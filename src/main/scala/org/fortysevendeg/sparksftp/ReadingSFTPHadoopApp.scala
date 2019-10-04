@@ -35,6 +35,8 @@ object ReadingSFTPHadoopApp extends IOApp {
         .enableHiveSupport
         .getOrCreate()
 
+//    This "redundant" code for different ways of reading configuration values is due to an investigation of how to pass
+//    parameters and properties in a way that is both usable by spark-submit and also Google Cloud Dataproc properties.
 //      sftpUser = sys.props.get("spark.executorEnv.SFTP_USER")
 //      sftpPass = sys.props.get("spark.executorEnv.SFTP_PASS")
 //      sftpHost = sys.props.get("spark.executorEnv.SFTP_HOST")
@@ -70,7 +72,9 @@ object ReadingSFTPHadoopApp extends IOApp {
       first_row_is_header = true
       sourceUri           = new URI(sftpUri)
 
-      //TODO: Test reading zip, and multiple files in a directory.
+      // TODO: Test reading zip
+      // TODO: Test reading splittable formats: snappy, lzo, bzip2
+      // TODO: Test reading multiple files in a directory.
 
       df = sparkSession.read
         .option("header", first_row_is_header)
@@ -82,7 +86,9 @@ object ReadingSFTPHadoopApp extends IOApp {
         .csv(sourceUri.toString)
 
       _ = df.printSchema()
-      _ = println(s"##############COUNT: ${df.count()}")
+
+      //Testing the content of the dataframe, the time in doing the count can be using to measure time in reading.
+      _ = println(s"### COUNT: ${df.count()}")
       _ = df.show(false)
 
       exitCode = ExitCode.Success

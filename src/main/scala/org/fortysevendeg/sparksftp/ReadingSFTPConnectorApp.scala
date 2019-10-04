@@ -35,12 +35,27 @@ object ReadingSFTPConnectorApp extends IOApp {
         .enableHiveSupport
         .getOrCreate()
 
+      sftpUser1 = sparkSession.sparkContext.getConf
+        .getOption("spark.executorEnv.SFTP_USER")
+        .getOrElse(config.sftp.sftpUser)
+      sftpPass1 = sparkSession.sparkContext.getConf
+        .getOption("spark.executorEnv.SFTP_PASS")
+        .getOrElse(config.sftp.sftpPass)
+      sftpHost1 = sparkSession.sparkContext.getConf
+        .getOption("spark.executorEnv.SFTP_HOST")
+        .getOrElse(config.sftp.sftpHost)
+      sftpPath1 = sparkSession.sparkContext.getConf
+        .getOption("spark.executorEnv.SFTP_PATH")
+        .getOrElse(config.sftp.sftpPath)
+
+      _ = println(s"#####From SparkConf: $sftpUser1, $sftpHost1, $sftpPath1")
+
       // Construct Spark data frame reading a file from SFTP
       data: DataFrame = sparkSession.read
         .format("com.springml.spark.sftp") //TODO: Is this library single threaded?
-        .option("host", config.sftp.sftpHost)
-        .option("username", config.sftp.sftpUser)
-        .option("password", config.sftp.sftpPass)
+        .option("host", sftpHost1)
+        .option("username", sftpUser1)
+        .option("password", sftpPass1)
         .option("header", true)
         .option("fileType", "csv")
         .option("delimiter", "|")
@@ -49,15 +64,14 @@ object ReadingSFTPConnectorApp extends IOApp {
 
       //Testing the content of the dataframe, the time in doing the count can be using to measure time in reading.
       _ = data.printSchema()
-      _ = println(s"##############COUNT: ${data.count()}")
+      _ = println(s"### COUNT: ${data.count()}")
       _ = data.show(false)
 
       // https://stackoverflow.com/questions/30664008/how-to-save-dataframe-directly-to-hive
-      //tables = sparkSession.sqlContext.tables("sampledb")
       _ = if (sparkSession.catalog.databaseExists("sampledb") == false)
         sparkSession.sqlContext.sql("create database sampledb")
       _ = data.write.mode(SaveMode.Overwrite).saveAsTable("sampledb.user_data")
-      // Other operations when persisting
+      // Other possible operations when persisting
       // data.select(df.col("col1"), df.col("col2"), df.col("col3")).write.mode("overwrite").saveAsTable("schemaName.tableName")
       // data.write.mode(SaveMode.Overwrite).saveAsTable("dbName.tableName")
 
@@ -67,15 +81,12 @@ object ReadingSFTPConnectorApp extends IOApp {
       _ = sparkSession.catalog.listTables().show(truncate = false)
       _ = sparkSession.sql("show tables").show(truncate = false)
 
-      // Query database
-      //dataFromHive = sparkSession.sql("select * from sampledb.user_data")
-      //justName = dataFromHive.select("name")
+      // Sample operations to query the Hive database
+      // dataFromHive = sparkSession.sql("select * from sampledb.user_data")
+      // justName = dataFromHive.select("name")
       dataFromHive = sparkSession.sql("select name from sampledb.user_data")
+      _            = dataFromHive.show(false)
 
-      _ = dataFromHive.show(false)
-      //_ = println(justName.collect())
-
-      // Other steps to do after the processing.
       // Write dataframe as CSV file to FTP server
       _ = dataFromHive.write
         .format("com.springml.spark.sftp")
