@@ -47,25 +47,27 @@ object ReadingSFTPHadoopApp extends IOApp {
 //      _ = println(s"$sftpUser, $sftpPass, $sftpHost, $sftpPath")
 //      sftpUri = s"sftp://${sftpUser}:${sftpPass}@${sftpHost}" + s":${sftpPath}"
 
-//      sftpUser = sys.props.getOrElse("spark.sftp.SFTP_USER", config.sftp.sftpUser)
-//      sftpPass = sys.props.getOrElse("spark.sftp.SFTP_PASS", config.sftp.sftpPass)
-//      sftpHost = sys.props.getOrElse("spark.sftp.SFTP_HOST", config.sftp.sftpHost)
-//      sftpPath = sys.props.getOrElse("spark.sftp.SFTP_PATH", config.sftp.sftpPath)
+      sftpUser = sys.props.getOrElse("spark.executorEnv.SFTP_USER", config.sftp.sftpUser)
+      sftpPass = sys.props.getOrElse("spark.executorEnv.SFTP_PASS", config.sftp.sftpPass)
+      sftpHost = sys.props.getOrElse("spark.executorEnv.SFTP_HOST", config.sftp.sftpHost)
+      sftpPath = sys.props.getOrElse("spark.executorEnv.SFTP_PATH", config.sftp.sftpPath)
+
+      _ = println(s"####From sys props: $sftpUser, $sftpHost, $sftpPath")
 
       sftpUser1 = sparkSession.sparkContext.getConf
-        .getOption("spark.sftp.SFTP_USER")
+        .getOption("spark.executorEnv.SFTP_USER")
         .getOrElse(config.sftp.sftpUser)
       sftpPass1 = sparkSession.sparkContext.getConf
-        .getOption("spark.sftp.SFTP_PASS")
+        .getOption("spark.executorEnv.SFTP_PASS")
         .getOrElse(config.sftp.sftpPass)
       sftpHost1 = sparkSession.sparkContext.getConf
-        .getOption("spark.sftp.SFTP_HOST")
+        .getOption("spark.executorEnv.SFTP_HOST")
         .getOrElse(config.sftp.sftpHost)
       sftpPath1 = sparkSession.sparkContext.getConf
-        .getOption("spark.sftp.SFTP_PATH")
+        .getOption("spark.executorEnv.SFTP_PATH")
         .getOrElse(config.sftp.sftpPath)
 
-      _ = println(s"$sftpUser1, $sftpHost1, $sftpPath1")
+      _ = println(s"#####From SparkConf: $sftpUser1, $sftpHost1, $sftpPath1")
 
       sftpUri = s"sftp://${sftpUser1}:${sftpPass1}@${sftpHost1}" + s":${sftpPath1}"
 

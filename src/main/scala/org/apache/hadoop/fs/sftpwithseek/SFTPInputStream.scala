@@ -50,16 +50,26 @@ class SFTPInputStream private[sftpwithseek] (
   private var pos    = 0L
   this.pos = 0
   this.closed = false
-  // We don't support seek unless the current position is same as the desired position.
+
+// We don't support seek unless the current position is same as the desired position.
+//  @throws[IOException]
+//  override def seek(position: Long): Unit = { // If seek is to the current pos, then simply return. This logic was added so that the seek call in
+//    // LineRecordReader#initialize method to '0' does not fail.
+//    if (getPos == position) return
+//    throw new IOException(SFTPInputStream.E_SEEK_NOTSUPPORTED)
+//  }
+//  @throws[IOException]
+//  override def seekToNewSource(targetPos: Long) =
+//    throw new IOException(SFTPInputStream.E_SEEK_NOTSUPPORTED)
+
   @throws[IOException]
-  override def seek(position: Long): Unit = { // If seek is to the current pos, then simply return. This logic was added so that the seek call in
-    // LineRecordReader#initialize method to '0' does not fail.
-    if (getPos == position) return
-    throw new IOException(SFTPInputStream.E_SEEK_NOTSUPPORTED)
+  def seek(position: Long): Unit = {
+    this.wrappedStream.skip(position)
+    this.pos = position
   }
   @throws[IOException]
-  override def seekToNewSource(targetPos: Long) =
-    throw new IOException(SFTPInputStream.E_SEEK_NOTSUPPORTED)
+  def seekToNewSource(targetPos: Long) = false
+
   @throws[IOException]
   override def getPos: Long = pos
   @throws[IOException]
