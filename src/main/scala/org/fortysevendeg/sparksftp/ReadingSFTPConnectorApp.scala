@@ -94,9 +94,10 @@ object ReadingSFTPConnectorApp extends IOApp {
         .option("host", sftpHost1)
         .option("username", sftpUser1)
         .option("password", sftpPass1)
+        .option("header", true)
         .option("delimiter", ",")
         .option("fileType", "csv")
-        .save("/tmp/spark/sample_processed.csv")
+        .save(s"${sftpPath1}.processed.csv")
 
       exitCode = ExitCode.Success
 
