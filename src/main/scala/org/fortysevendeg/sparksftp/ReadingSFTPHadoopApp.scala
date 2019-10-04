@@ -26,7 +26,7 @@ object ReadingSFTPHadoopApp extends IOApp {
           "spark.kryo.registrationRequired",
           config.spark.serializer.contains("KryoSerializer").toString
         )
-        .set("fs.sftp.impl", "org.apache.hadoop.fs.sftp.SFTPFileSystem")
+        .set("fs.sftp.impl", "org.apache.hadoop.fs.sftpwithseek.SFTPFileSystem")
         .set("fs.sftp.proxy.host", config.sftp.sftpHost)
         .set("fs.sftp.host", config.sftp.sftpHost)
         .set("fs.sftp.user", config.sftp.sftpUser)

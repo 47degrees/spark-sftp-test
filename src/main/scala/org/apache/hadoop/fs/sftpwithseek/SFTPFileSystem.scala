@@ -1,4 +1,4 @@
-package org.apache.hadoop.fs.sftp
+package org.apache.hadoop.fs.sftpwithseek
 
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.ChannelSftp._

@@ -1,4 +1,4 @@
-package org.apache.hadoop.fs.sftp
+package org.apache.hadoop.fs.sftpwithseek
 
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.JSchException
@@ -38,7 +38,7 @@ object SFTPInputStream {
   val E_STREAM_CLOSED       = "Stream closed"
   val E_CLIENT_NOTCONNECTED = "Client not connected"
 }
-class SFTPInputStream private[sftp] (
+class SFTPInputStream private[sftpwithseek] (
     var wrappedStream: InputStream,
     var channel: ChannelSftp,
     var stats: FileSystem.Statistics

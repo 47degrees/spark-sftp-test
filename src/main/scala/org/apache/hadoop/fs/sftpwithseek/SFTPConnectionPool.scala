@@ -1,4 +1,4 @@
-package org.apache.hadoop.fs.sftp
+package org.apache.hadoop.fs.sftpwithseek
 
 import com.jcraft.jsch.ChannelSftp
 import com.jcraft.jsch.JSch
@@ -11,7 +11,7 @@ import java.io.IOException
 import java.util
 import java.util.Properties
 
-import org.apache.hadoop.fs.sftp.SFTPConnectionPool.ConnectionInfo
+import org.apache.hadoop.fs.sftpwithseek.SFTPConnectionPool.ConnectionInfo
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -39,7 +39,7 @@ object SFTPConnectionPool {
    * Class to capture the minimal set of information that distinguish
    * between different connections.
    */
-  private[sftp] class ConnectionInfo private[sftp] (
+  private[sftpwithseek] class ConnectionInfo private[sftpwithseek] (
       val hst: String,
       var port: Int,
       val usr: String
@@ -90,7 +90,7 @@ object SFTPConnectionPool {
     }
   }
 }
-class SFTPConnectionPool private[sftp] ( // Maximum number of allowed live connections. This doesn't mean we cannot
+class SFTPConnectionPool private[sftpwithseek] ( // Maximum number of allowed live connections. This doesn't mean we cannot
     // have more live connections. It means that when we have more
     // live connections than this threshold, any unused connection will be
     // closed.
@@ -103,7 +103,7 @@ class SFTPConnectionPool private[sftp] ( // Maximum number of allowed live conne
   private var idleConnections     = new util.HashMap[ConnectionInfo, util.HashSet[ChannelSftp]]
   private var con2infoMap         = new util.HashMap[ChannelSftp, ConnectionInfo]
   @throws[IOException]
-  private[sftp] def getFromPool(info: ConnectionInfo): ChannelSftp = {
+  private[sftpwithseek] def getFromPool(info: ConnectionInfo): ChannelSftp = {
     val cons                 = idleConnections.get(info)
     var channel: ChannelSftp = null
     if (cons != null && cons.size > 0) {
@@ -120,7 +120,7 @@ class SFTPConnectionPool private[sftp] ( // Maximum number of allowed live conne
   /** Add the channel into pool.
    * @param channel
    */
-  private[sftp] def returnToPool(channel: ChannelSftp): Unit = {
+  private[sftpwithseek] def returnToPool(channel: ChannelSftp): Unit = {
     val info = con2infoMap.get(channel)
     var cons = idleConnections.get(info)
     if (cons == null) {
@@ -131,7 +131,7 @@ class SFTPConnectionPool private[sftp] ( // Maximum number of allowed live conne
   }
 
   /** Shutdown the connection pool and close all open connections. */
-  private[sftp] def shutdown(): Unit = {
+  private[sftpwithseek] def shutdown(): Unit = {
     if (this.con2infoMap == null) return // already shutdown in case it is called
     SFTPConnectionPool.LOG.info("Inside shutdown, con2infoMap size=" + con2infoMap.size)
     this.maxConnection = 0
@@ -202,7 +202,7 @@ class SFTPConnectionPool private[sftp] ( // Maximum number of allowed live conne
     }
   }
   @throws[IOException]
-  private[sftp] def disconnect(channel: ChannelSftp): Unit = {
+  private[sftpwithseek] def disconnect(channel: ChannelSftp): Unit = {
     if (channel != null) { // close connection if too many active connections
       var closeConnection = false
       this.synchronized {
