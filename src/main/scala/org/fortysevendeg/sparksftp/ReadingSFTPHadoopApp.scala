@@ -27,11 +27,6 @@ object ReadingSFTPHadoopApp extends IOApp {
           config.spark.serializer.contains("KryoSerializer").toString
         )
         .set("fs.sftp.impl", "org.apache.hadoop.fs.sftpwithseek.SFTPFileSystem")
-        .set("fs.sftp.proxy.host", config.sftp.sftpHost)
-        .set("fs.sftp.host", config.sftp.sftpHost)
-        .set("fs.sftp.user", config.sftp.sftpUser)
-        .set("fs.sftp.password", config.sftp.sftpPass)
-        .set("fs.sftp.host.port", "22")
         .set("fs.sftp.impl.disable.cache", "true")
         .registerKryoClasses(RegisterInKryo.classes.toArray)
 
@@ -71,28 +66,11 @@ object ReadingSFTPHadoopApp extends IOApp {
 
       sftpUri = s"sftp://${sftpUser1}:${sftpPass1}@${sftpHost1}" + s":${sftpPath1}"
 
-      // Others way of reading, if we wanted to read as inputstreamT
-      // context = sparkSession.sparkContext
-      // _ = context.addFile(sftpPath)
-      // fileName = SparkFiles.get(sftpPath.split("/").last)
-      // fileRDD = context.textFile(fileName)
-      // sourceFS = FileSystem.get(sourceUri, context.hadoopConfiguration)
-      // fsinputStream = sourceFS.open(new Path(sourceUri.getPath))
-      // context.textFile
-      // context.hadoopFile
-      // context.newAPIHadoopFile()
       inferSchema         = true
       first_row_is_header = true
       sourceUri           = new URI(sftpUri)
 
-      //TODO: Option 1. Storing it, as fast as possible, without processing. Probably easier. Implement
-      //TODO: Option 2. Convert to RDD (optionally process it) and store it.
       //TODO: Test reading zip, and multiple files in a directory.
-      //TODO: Test reading by partitions in parallel.
-
-//      _ = println(
-//        s"sourceUri $sourceUri, getPath ${sourceUri.getPath}, sourceUri.toString ${sourceUri.toString}"
-//      )
 
       df = sparkSession.read
         .option("header", first_row_is_header)
@@ -106,10 +84,6 @@ object ReadingSFTPHadoopApp extends IOApp {
       _ = df.printSchema()
       _ = println(s"##############COUNT: ${df.count()}")
       _ = df.show(false)
-
-      //_ = df.collect().foreach(println)
-      //_ = data.printSchema()
-      //_ = data.show(false)
 
       exitCode = ExitCode.Success
 

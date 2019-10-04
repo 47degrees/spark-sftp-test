@@ -12,7 +12,6 @@ lazy val root = (project in file(".")).
   settings(
     inThisBuild(List(
       organization := "org.fortysevendeg",
-      //scalaVersion := "2.12.10",
       scalaVersion := "2.11.12"
     )),
     name := "sparksftpTest",
@@ -31,10 +30,8 @@ lazy val root = (project in file(".")).
       "org.apache.spark" %% "spark-streaming" % SparkVersion % "provided",
       "org.apache.spark" %% "spark-sql" % SparkVersion % "provided",
       "org.apache.spark" %% "spark-hive" % SparkVersion,
-      //"org.apache.hadoop" % "hadoop-common" % HadoopVersion,
       "com.github.pureconfig" %% "pureconfig"  %  PureconfigVersion,
       "org.typelevel" %% "cats-effect" % CatsEffectVersion,
-      //"org.fortysevendeg" %% "spark-sftp" % "1.1.7-SNAPSHOT",
       "com.springml" % "sftp.client" % "1.0.3",
       "com.jcraft" % "jsch" % "0.1.54",
       "com.springml" % "spark-sftp_2.11" % "1.1.4",
@@ -43,20 +40,12 @@ lazy val root = (project in file(".")).
       "org.scalacheck" %% "scalacheck" % "1.14.1" % "test",
       "org.apache.spark" %% "spark-hive"       % SparkVersion % "test",
       "org.slf4j" % "slf4j-api" % "1.7.27",
-      //"org.slf4j" %% "slf4j-log4j12" % "1.7.27",
       "ch.qos.logback"  %  "logback-classic"     % LogbackVersion,
-      "ch.qos.logback"  %  "logback-core"     % LogbackVersion,
-      //"io.chrisdavenport" %% "log4cats-core"     % Log4catsVersion,
-      //"io.chrisdavenport" %% "log4cats-slf4j"     % Log4catsVersion,
-      //).map(_.exclude("org.slf4j", "slf4j-log4j12")
-      //.exclude("org.slf4j", "log4j-api")
-      //.exclude("org.slf4j", "log4j-slf4j-impl")
+      "ch.qos.logback"  %  "logback-core"     % LogbackVersion
     ),
     addCompilerPlugin("org.typelevel" %% "kind-projector"     % "0.10.3"),
     addCompilerPlugin("com.olegpy"    %% "better-monadic-for" % "0.3.1"),
     addCompilerPlugin("org.scalamacros" % "paradise"            % "2.1.0" cross CrossVersion.full),
-
-    //unmanagedBase in (Compile, runMain) := baseDirectory.value / "home" / "mendezr" / "development" / "hadoop-2.9.2" / "share" / "hadoop" / "common" / "lib"
 
 // uses compile classpath for the run task, including "provided" jar (cf http://stackoverflow.com/a/21803413/3827)
     run in Compile := Defaults.runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run)).evaluated,
@@ -119,7 +108,6 @@ lazy val root = (project in file(".")).
       case x =>
         val oldStrategy = (assemblyMergeStrategy in assembly).value
         oldStrategy(x)
-      //case x => MergeStrategy.last
     }
 
   )
