@@ -48,7 +48,7 @@ object ReadingSFTPConnectorApp extends IOApp {
         .getOption("spark.executorEnv.SFTP_PATH")
         .getOrElse(config.sftp.sftpPath)
 
-      _ = println(s"#####From SparkConf: $sftpUser1, $sftpHost1, $sftpPath1")
+      _ = println(s"#### From SparkConf: $sftpUser1, $sftpHost1, $sftpPath1")
 
       // Construct Spark data frame reading a file from SFTP
       data: DataFrame = sparkSession.read
@@ -60,7 +60,7 @@ object ReadingSFTPConnectorApp extends IOApp {
         .option("fileType", "csv")
         .option("delimiter", "|")
         .option("inferSchema", "true")
-        .load("/tmp/spark/sample.psv")
+        .load(sftpPath1)
 
       //Testing the content of the dataframe, the time in doing the count can be using to measure time in reading.
       _ = data.printSchema()

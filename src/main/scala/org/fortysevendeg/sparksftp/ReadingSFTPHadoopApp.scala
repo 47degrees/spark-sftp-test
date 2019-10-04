@@ -78,10 +78,6 @@ object ReadingSFTPHadoopApp extends IOApp {
 
       df = sparkSession.read
         .option("header", first_row_is_header)
-        //    option("delimiter", delimiter).
-        //    option("quote", quote).
-        //    option("escape", escape).
-        //    option("multiLine", multiLine).
         .option("inferSchema", inferSchema)
         .csv(sourceUri.toString)
 
