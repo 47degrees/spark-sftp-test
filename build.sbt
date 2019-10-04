@@ -32,8 +32,15 @@ lazy val root = (project in file(".")).
       "org.apache.spark" %% "spark-hive" % SparkVersion,
       "com.github.pureconfig" %% "pureconfig"  %  PureconfigVersion,
       "org.typelevel" %% "cats-effect" % CatsEffectVersion,
-      "com.springml" % "sftp.client" % "1.0.3",
-      "com.jcraft" % "jsch" % "0.1.54",
+//      "org.apache.hadoop" % "hadoop-common" % "2.9.2", //Needed for runtime support for hive,datanucleus,jdo, etc.
+//      "org.datanucleus" % "datanucleus-core" % "3.2.6",
+//      "org.datanucleus" % "datanucleus-api-jdo" % "3.2.6",
+//      "org.datanucleus" % "datanucleus-enhancer" % "3.2.6",
+//      "org.datanucleus" % "datanucleus-api-jpa" % "5.2.1",
+//      "org.datanucleus" % "datanucleus-accessplatform-jdo-rdbms" % "3.2.6" pomOnly(),
+//      "org.datanucleus" % "datanucleus-jdo-query" % "5.0.9",
+//      "org.datanucleus" % "datanucleus-rdbms" % "3.2.10",
+//      "org.datanucleus" % "javax.jdo" % "3.2.0-m12",
       "com.springml" % "spark-sftp_2.11" % "1.1.4",
       "io.netty" % "netty-all" % "4.1.17.Final",
       "org.scalatest" %% "scalatest" % "3.0.8" % "test",
@@ -94,6 +101,8 @@ lazy val root = (project in file(".")).
       case PathList("io", "netty", xs @ _*) => MergeStrategy.first
       case PathList("javax","xml", xs @ _*) => MergeStrategy.last
       case PathList("javax","xml","stream", xs @ _*) => MergeStrategy.last
+      case PathList("javax","jdo", xs @ _*) => MergeStrategy.last
+      case PathList("org","datanucleus", xs @ _*) => MergeStrategy.first
       case "about.html" => MergeStrategy.rename
       case "META-INF/ECLIPSEF.RSA" => MergeStrategy.last
       case "META-INF/mailcap" => MergeStrategy.last

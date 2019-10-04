@@ -58,7 +58,7 @@ object ReadingSFTPConnectorApp extends IOApp {
         .option("password", sftpPass1)
         .option("header", true)
         .option("fileType", "csv")
-        .option("delimiter", "|")
+        .option("delimiter", ",")
         .option("inferSchema", "true")
         .load(sftpPath1)
 
@@ -66,7 +66,6 @@ object ReadingSFTPConnectorApp extends IOApp {
       _ = data.printSchema()
       _ = println(s"### COUNT: ${data.count()}")
       _ = data.show(false)
-
 
       // Creating databases do not work in Dataproc: https://github.com/mozafari/verdictdb/issues/163
       //_ = if (sparkSession.catalog.databaseExists("sampledb") == false) sparkSession.sqlContext.sql("create database sampledb")
@@ -79,7 +78,7 @@ object ReadingSFTPConnectorApp extends IOApp {
       // data.write.mode(SaveMode.Overwrite).saveAsTable("dbName.tableName")
 
       // Some other sample operations with databases and tables
-      _ = sparkSession.catalog.listDatabases().show(truncate = false)
+      //_ = sparkSession.catalog.listDatabases().show(truncate = false)
       _ = sparkSession.catalog.listTables().show(truncate = false)
       _ = sparkSession.sql("show tables").show(truncate = false)
 
@@ -92,10 +91,10 @@ object ReadingSFTPConnectorApp extends IOApp {
       // Write dataframe as CSV file to FTP server
       _ = dataFromHive.write
         .format("com.springml.spark.sftp")
-        .option("host", config.sftp.sftpHost)
-        .option("username", config.sftp.sftpUser)
-        .option("password", config.sftp.sftpPass)
-        .option("delimiter", "|")
+        .option("host", sftpHost1)
+        .option("username", sftpUser1)
+        .option("password", sftpPass1)
+        .option("delimiter", ",")
         .option("fileType", "csv")
         .save("/tmp/spark/sample_processed.csv")
 

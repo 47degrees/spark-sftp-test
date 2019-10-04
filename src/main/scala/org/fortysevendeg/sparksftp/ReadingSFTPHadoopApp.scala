@@ -5,7 +5,7 @@ import java.net.URI
 import pureconfig.generic.auto._
 import cats.effect.{ExitCode, IO, IOApp}
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.fortysevendeg.sparksftp.common.RegisterInKryo
 import org.fortysevendeg.sparksftp.config.model.configs.ReadingSFTPConfig
 import org.training.trainingbot.config.ConfigLoader
@@ -86,6 +86,21 @@ object ReadingSFTPHadoopApp extends IOApp {
       //Testing the content of the dataframe, the time in doing the count can be using to measure time in reading.
       _ = println(s"### COUNT: ${df.count()}")
       _ = df.show(false)
+
+      _ = df.write.mode(SaveMode.Overwrite).saveAsTable("user_data")
+
+      _ = sparkSession.catalog.listTables().show(truncate = false)
+      _ = sparkSession.sql("show tables").show(truncate = false)
+
+      // Sample operations to query the Hive database
+
+      dataFromHive = sparkSession.sql("select name from user_data")
+      _            = dataFromHive.show(false)
+
+      // Write dataframe as CSV file to FTP server
+      _ = dataFromHive.write
+        .mode(SaveMode.Overwrite)
+        .csv("/tmp/spark/sample_processed.csv")
 
       exitCode = ExitCode.Success
 
