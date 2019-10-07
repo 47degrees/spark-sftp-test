@@ -5,6 +5,8 @@ import scala.language.existentials
 object RegisterInKryo {
 
   lazy val classes = List(
+    classOf[org.apache.spark.sql.execution.streaming.sources.PackedRowCommitMessage],
+    classOf[org.apache.spark.sql.execution.streaming.SinkFileStatus],
     classOf[org.apache.spark.sql.execution.datasources.BasicWriteTaskStats],
     classOf[org.apache.spark.sql.execution.datasources.ExecutedWriteSummary],
     "org.apache.spark.internal.io.FileCommitProtocol$TaskCommitMessage".mkClass,

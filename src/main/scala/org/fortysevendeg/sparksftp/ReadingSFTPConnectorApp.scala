@@ -65,7 +65,7 @@ object ReadingSFTPConnectorApp extends IOApp {
 
       //Testing the content of the dataframe, the time in doing the count can be using to measure time in reading.
       _ = data.printSchema()
-      _ = println(s"### COUNT: ${data.count()}")
+      //_ = println(s"### COUNT: ${data.count()}")
       _ = data.show(false)
 
       // Creating databases do not work in Dataproc: https://github.com/mozafari/verdictdb/issues/163
