@@ -44,7 +44,7 @@ object ReadingSFTPHadoopApp extends IOApp {
         .csv(sourceUri.toString)
 
       _ = df.printSchema()
-      
+
       _ = sparkSession.sqlContext.sql("DROP TABLE IF EXISTS user_data") //_ = sparkSession.sparkContext.setLogLevel("DEBUG") //If we wanted to debug, we could use this.
       _ = df.write.mode(SaveMode.Overwrite).format("parquet").saveAsTable("user_data")
 
@@ -59,8 +59,6 @@ object ReadingSFTPHadoopApp extends IOApp {
       _ = dataFromHive.write
         .mode(SaveMode.Overwrite)
         .csv(s"${sftpConfig.sftpPath}.processed.csv")
-
-      exitCode = ExitCode.Success
-
-    } yield exitCode
+    
+    } yield ExitCode.Success
 }
