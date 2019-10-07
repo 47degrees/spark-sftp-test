@@ -38,19 +38,14 @@ object ReadingSFTPHadoopApp extends IOApp {
       first_row_is_header = true
       sourceUri           = new URI(sftpUri)
 
-      // TODO: Test reading zip
-      // TODO: Test reading splittable formats: snappy, lzo, bzip2
-      // TODO: Test reading multiple files in a directory.
-
       df = sparkSession.read
         .option("header", first_row_is_header)
         .option("inferSchema", inferSchema)
         .csv(sourceUri.toString)
 
       _ = df.printSchema()
-
-      //_ = sparkSession.sparkContext.setLogLevel("DEBUG") //If we wanted to debug, we could use this.
-      _ = sparkSession.sqlContext.sql("DROP TABLE IF EXISTS user_data")
+      
+      _ = sparkSession.sqlContext.sql("DROP TABLE IF EXISTS user_data") //_ = sparkSession.sparkContext.setLogLevel("DEBUG") //If we wanted to debug, we could use this.
       _ = df.write.mode(SaveMode.Overwrite).format("parquet").saveAsTable("user_data")
 
       _ = sparkSession.catalog.listTables().show(truncate = false)

@@ -43,9 +43,6 @@ object ReadingSFTPConnectorApp extends IOApp {
         .load(sftpConfig.sftpPath)
 
       // Creating databases do not work in Dataproc: https://github.com/mozafari/verdictdb/issues/163
-      //_ = if (sparkSession.catalog.databaseExists("sampledb") == false) sparkSession.sqlContext.sql("create database sampledb USING HIVE")
-      //_ = sparkSession.catalog.setCurrentDatabase("sampledb")
-
       // https://stackoverflow.com/questions/30664008/how-to-save-dataframe-directly-to-hive
       _ = sparkSession.sqlContext.sql("DROP TABLE IF EXISTS user_data")
       _ = data.write.mode(SaveMode.Overwrite).format("parquet").saveAsTable("user_data")
@@ -55,8 +52,6 @@ object ReadingSFTPConnectorApp extends IOApp {
       _ = sparkSession.sql("show tables").show(truncate = false)
 
       // Sample operations to query the Hive database
-      // dataFromHive = sparkSession.sql("select * from sampledb.user_data")
-      // justName = dataFromHive.select("name")
       dataFromHive = sparkSession.sql("select name from user_data")
       _            = dataFromHive.show(false)
 
