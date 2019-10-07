@@ -73,5 +73,5 @@ object ReadingSFTPConnectorApp extends IOApp {
 
       exitCode = ExitCode.Success
 
-    } yield exitCode
+    } yield ExitCode.Success
 }

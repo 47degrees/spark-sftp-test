@@ -11,7 +11,7 @@ import org.scalafmt.sbt.ScalafmtPlugin.autoImport._
 lazy val root = (project in file(".")).
   settings(
     inThisBuild(List(
-      organization := "org.fortysevendeg",
+      organization := "com.47deg",
       scalaVersion := "2.11.12"
     )),
     name := "sparksftpTest",
