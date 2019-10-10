@@ -5,11 +5,11 @@ import cats.syntax.flatMap._
 import cats.syntax.functor._
 import pureconfig.generic.auto._
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import org.fortysevendeg.sparksftp.common.SparkUtils
+import org.fortysevendeg.sparksftp.common.SparkUtils._
+import org.apache.spark.sql.SparkSession
+import org.fortysevendeg.sparksftp.common.{HiveUserData, SparkUtils}
 import org.fortysevendeg.sparksftp.config.model.configs.ReadingSFTPConfig
 import org.training.trainingbot.config.ConfigLoader
-import org.apache.spark.sql.SaveMode
 import org.fortysevendeg.sparksftp.config.model.configs
 
 object ReadingSFTPConnectorApp extends IOApp {
@@ -30,43 +30,29 @@ object ReadingSFTPConnectorApp extends IOApp {
       sftpConfig = configs.SFTPConfig
         .configFromContextProperties(sparkSession.sparkContext, config.sftp)
 
-      // Construct Spark data frame reading a file from SFTP
-      data: DataFrame = sparkSession.read
-        .format("com.springml.spark.sftp") //TODO: Is this library single threaded?
-        .option("host", sftpConfig.sftpHost)
-        .option("username", sftpConfig.sftpUser)
-        .option("password", sftpConfig.sftpPass)
-        .option("header", true)
-        .option("fileType", "csv")
-        .option("delimiter", ",")
-        .option("inferSchema", "true")
-        .load(sftpConfig.sftpPath)
+      // Read the source files from SFTP into dataframes
+      users = dataframeFromCsvWithSFTPConnector(sparkSession, sftpConfig, sftpConfig.sftpUserPath)
+      salaries = dataframeFromCsvWithSFTPConnector(
+        sparkSession,
+        sftpConfig,
+        sftpConfig.sftpSalaryPath
+      )
 
-      // Creating databases do not work in Dataproc: https://github.com/mozafari/verdictdb/issues/163
-      // https://stackoverflow.com/questions/30664008/how-to-save-dataframe-directly-to-hive
-      _ = sparkSession.sqlContext.sql("DROP TABLE IF EXISTS user_data")
-      _ = data.write.mode(SaveMode.Overwrite).format("parquet").saveAsTable("user_data")
-
-      // Some other sample operations with databases and tables
-      _ = sparkSession.catalog.listTables().show(truncate = false)
-      _ = sparkSession.sql("show tables").show(truncate = false)
-
-      // Sample operations to query the Hive database
-      dataFromHive = sparkSession.sql("select name from user_data")
-      _            = dataFromHive.show(false)
+      // Sample operations to persist and query the Hive database
+      _                                        = HiveUserData.persistUserData(sparkSession, users, salaries)
+      (userDataFromHive, salariesDataFromHive) = HiveUserData.readUserData(sparkSession)
 
       // Write dataframe as CSV file to FTP server
-      _ = dataFromHive.write
-        .format("com.springml.spark.sftp")
-        .option("host", sftpConfig.sftpHost)
-        .option("username", sftpConfig.sftpUser)
-        .option("password", sftpConfig.sftpPass)
-        .option("header", true)
-        .option("delimiter", ",")
-        .option("fileType", "csv")
-        .save(s"${sftpConfig.sftpPath}.processed.csv")
-
-      exitCode = ExitCode.Success
+      _ = dataframeToCompressedCsvWithSFTPConnector(
+        userDataFromHive,
+        sftpConfig,
+        s"${sftpConfig.sftpUserPath}_output"
+      )
+      _ = dataframeToCompressedCsvWithSFTPConnector(
+        salariesDataFromHive,
+        sftpConfig,
+        s"${sftpConfig.sftpSalaryPath}_output"
+      )
 
     } yield ExitCode.Success
 }

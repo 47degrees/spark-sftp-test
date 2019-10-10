@@ -5,6 +5,8 @@ import scala.language.existentials
 object RegisterInKryo {
 
   lazy val classes = List(
+    "org.apache.spark.sql.execution.joins.LongToUnsafeRowMap".mkClass,
+    "org.apache.spark.sql.execution.joins.LongHashedRelation".mkClass,
     classOf[org.apache.spark.sql.execution.datasources.BasicWriteTaskStats],
     classOf[org.apache.spark.sql.execution.datasources.ExecutedWriteSummary],
     "org.apache.spark.internal.io.FileCommitProtocol$TaskCommitMessage".mkClass,

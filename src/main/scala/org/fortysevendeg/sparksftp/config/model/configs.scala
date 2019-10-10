@@ -8,7 +8,8 @@ object configs {
       sftpHost: String,
       sftpUser: String,
       sftpPass: String,
-      sftpPath: String
+      sftpUserPath: String,
+      sftpSalaryPath: String
   )
 
   final case class SparkConfig(partitions: Int, serializer: String)
@@ -27,9 +28,12 @@ object configs {
         sftpHost = sparkContext.getConf
           .getOption("spark.executorEnv.SFTP_HOST")
           .getOrElse(config.sftpHost),
-        sftpPath = sparkContext.getConf
-          .getOption("spark.executorEnv.SFTP_PATH")
-          .getOrElse(config.sftpPath)
+        sftpUserPath = sparkContext.getConf
+          .getOption("spark.executorEnv.SFTP_USERS_PATH")
+          .getOrElse(config.sftpUserPath),
+        sftpSalaryPath = sparkContext.getConf
+          .getOption("spark.executorEnv.SFTP_SALARIES_PATH")
+          .getOrElse(config.sftpSalaryPath)
       )
   }
 }
