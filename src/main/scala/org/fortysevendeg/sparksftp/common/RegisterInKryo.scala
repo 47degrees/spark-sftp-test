@@ -5,6 +5,8 @@ import scala.language.existentials
 object RegisterInKryo {
 
   lazy val classes = List(
+    "org.apache.spark.sql.types.Decimal$DecimalIsFractional$".mkClass,
+    "org.apache.spark.sql.types.Decimal$DecimalAsIfIntegral$".mkClass,
     classOf[org.apache.spark.sql.types.DecimalType],
     "org.apache.spark.sql.execution.joins.LongToUnsafeRowMap".mkClass,
     "org.apache.spark.sql.execution.joins.LongHashedRelation".mkClass,
