@@ -12,8 +12,6 @@ import SparkUtils._
 object HiveUserData {
 
   /** Sample operations to perform on the user data
-   *
-   *
    */
   def persistUserData(sparkSession: SparkSession, users: DataFrame, salaries: DataFrame) = {
 
@@ -21,7 +19,7 @@ object HiveUserData {
     persistDataFrame(sparkSession, salaries.select("ID", "salary"), "salaries")
 
     val userWithSalaries = users.join(salaries, "ID").select("ID", "name", "salary")
-    SparkUtils.persistDataFrame(sparkSession, userWithSalaries, "user_salary")
+    persistDataFrame(sparkSession, userWithSalaries, "user_salary")
 
     // Show the list of tables in the spark console
     users.printSchema()
@@ -30,7 +28,7 @@ object HiveUserData {
     sparkSession.sql("show tables").show(truncate = false)
   }
 
-  def readUserData(sparkSession: SparkSession): (DataFrame, DataFrame) = {
+  def readUserData(sparkSession: SparkSession): (DataFrame, DataFrame, DataFrame) = {
     //Used to return the dataframe and show an excerpt in console
     val userDataFromHive = sparkSession.sql("select name from user_data")
     userDataFromHive.show(false)
@@ -39,9 +37,10 @@ object HiveUserData {
     salariesDataFromHive.show(false)
 
     //Excerpt from the joined table
-    sparkSession.sql("select name,salary from user_salary").show(false)
+    val user_salaries = sparkSession.sql("select name,salary from user_salary")
+      //.show(false)
 
-    (userDataFromHive, salariesDataFromHive)
+    (userDataFromHive, salariesDataFromHive, user_salaries)
   }
 
 }

@@ -32,6 +32,7 @@ object ReadingSFTPConnectorApp extends IOApp {
 
       // Read the source files from SFTP into dataframes
       users = dataframeFromCsvWithSFTPConnector(sparkSession, sftpConfig, sftpConfig.sftpUserPath)
+        .repartition(8)
       salaries = dataframeFromCsvWithSFTPConnector(
         sparkSession,
         sftpConfig,
@@ -40,7 +41,7 @@ object ReadingSFTPConnectorApp extends IOApp {
 
       // Sample operations to persist and query the Hive database
       _                                        = HiveUserData.persistUserData(sparkSession, users, salaries)
-      (userDataFromHive, salariesDataFromHive) = HiveUserData.readUserData(sparkSession)
+      (userDataFromHive, salariesDataFromHive, _) = HiveUserData.readUserData(sparkSession)
 
       // Write dataframe as CSV file to FTP server
       _ = dataframeToCompressedCsvWithSFTPConnector(

@@ -43,6 +43,7 @@ object SparkUtils {
 
   def persistDataFrame(sparkSession: SparkSession, df: DataFrame, name: String) = {
     // Persist the dataframes into Hive tables with parquet file format, the default compression for parquet is snappy, that is splittable for parquet.
+    // Another option: externalTable (HDFS, Hive)
     // If we wanted to debug any issue with the databases, we could use this: sparkSession.sparkContext.setLogLevel("DEBUG")
     sparkSession.sql(s"DROP TABLE IF EXISTS ${name}")
     df.write.mode(SaveMode.Overwrite).format("parquet").saveAsTable(name)
