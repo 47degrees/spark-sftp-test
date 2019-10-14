@@ -15,10 +15,10 @@ object HiveUserData {
    */
   def persistUserData(sparkSession: SparkSession, users: DataFrame, salaries: DataFrame) = {
 
-    persistDataFrame(sparkSession, users.select("ID", "name"), "user_data")
+    persistDataFrame(sparkSession, users.select("ID", "name", "age"), "user_data", Seq("age"))
     persistDataFrame(sparkSession, salaries.select("ID", "salary"), "salaries")
 
-    val userWithSalaries = users.join(salaries, "ID").select("ID", "name", "salary")
+    val userWithSalaries = users.join(salaries, "ID").select("ID", "name", "age", "salary")
     persistDataFrame(sparkSession, userWithSalaries, "user_salary")
 
     // Show the list of tables in the spark console
@@ -30,14 +30,14 @@ object HiveUserData {
 
   def readUserData(sparkSession: SparkSession): (DataFrame, DataFrame, DataFrame) = {
     //Used to return the dataframe and show an excerpt in console
-    val userDataFromHive = sparkSession.sql("select name from user_data")
+    val userDataFromHive = sparkSession.sql("select name from user_data").repartition(8)
     userDataFromHive.show(false)
 
-    val salariesDataFromHive = sparkSession.sql("select ID,salary from salaries")
+    val salariesDataFromHive = sparkSession.sql("select ID,salary from salaries").repartition(8)
     salariesDataFromHive.show(false)
 
     //Excerpt from the joined table
-    val user_salaries = sparkSession.sql("select name,salary from user_salary")
+    val user_salaries = sparkSession.sql("select name,salary from user_salary").repartition(8)
       //.show(false)
 
     (userDataFromHive, salariesDataFromHive, user_salaries)

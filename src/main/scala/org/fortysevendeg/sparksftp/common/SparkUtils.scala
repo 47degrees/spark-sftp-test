@@ -11,7 +11,6 @@ object SparkUtils {
   def createSparkConfWithSFTPSupport(config: ReadingSFTPConfig): SparkConf = {
     new SparkConf()
       .set("spark.serializer", config.spark.serializer)
-      .set("spark.master", "local")
       .set(
         "spark.kryo.registrationRequired",
         config.spark.serializer.contains("KryoSerializer").toString
@@ -41,12 +40,17 @@ object SparkUtils {
       .csv(sourceUri.toString)
   }
 
-  def persistDataFrame(sparkSession: SparkSession, df: DataFrame, name: String) = {
+  def persistDataFrame(sparkSession: SparkSession, df: DataFrame, name: String, partitionBy: Seq[String] = Seq.empty) = {
     // Persist the dataframes into Hive tables with parquet file format, the default compression for parquet is snappy, that is splittable for parquet.
     // Another option: externalTable (HDFS, Hive)
     // If we wanted to debug any issue with the databases, we could use this: sparkSession.sparkContext.setLogLevel("DEBUG")
     sparkSession.sql(s"DROP TABLE IF EXISTS ${name}")
-    df.write.mode(SaveMode.Overwrite).format("parquet").saveAsTable(name)
+
+    df.write
+      .mode(SaveMode.Overwrite)
+      .partitionBy(partitionBy:_*)
+      .format("parquet")
+      .saveAsTable(name)
   }
 
   def dataframeToCompressedCsv(df: DataFrame, path: String) = {
