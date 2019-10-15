@@ -7,7 +7,9 @@ object RegisterInKryo {
   lazy val classes = List(
     classOf[org.apache.spark.sql.execution.command.PartitionStatistics],
     "org.apache.spark.sql.execution.datasources.InMemoryFileIndex$SerializableBlockLocation".mkClass,
-    Class.forName("[Lorg.apache.spark.sql.execution.datasources.InMemoryFileIndex$SerializableBlockLocation;"),
+    Class.forName(
+      "[Lorg.apache.spark.sql.execution.datasources.InMemoryFileIndex$SerializableBlockLocation;"
+    ),
     "org.apache.spark.sql.execution.datasources.InMemoryFileIndex$SerializableFileStatus".mkClass,
     "org.apache.spark.sql.types.Decimal$DecimalIsFractional$".mkClass,
     "org.apache.spark.sql.types.Decimal$DecimalAsIfIntegral$".mkClass,

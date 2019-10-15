@@ -40,7 +40,12 @@ object SparkUtils {
       .csv(sourceUri.toString)
   }
 
-  def persistDataFrame(sparkSession: SparkSession, df: DataFrame, name: String, partitionBy: Seq[String] = Seq.empty) = {
+  def persistDataFrame(
+      sparkSession: SparkSession,
+      df: DataFrame,
+      name: String,
+      partitionBy: Seq[String] = Seq.empty
+  ) = {
     // Persist the dataframes into Hive tables with parquet file format, the default compression for parquet is snappy, that is splittable for parquet.
     // Another option: externalTable (HDFS, Hive)
     // If we wanted to debug any issue with the databases, we could use this: sparkSession.sparkContext.setLogLevel("DEBUG")
@@ -48,15 +53,22 @@ object SparkUtils {
 
     df.write
       .mode(SaveMode.Overwrite)
-      .partitionBy(partitionBy:_*)
+      .partitionBy(partitionBy: _*)
       .format("parquet")
       .saveAsTable(name)
   }
 
   def dataframeToCompressedCsv(df: DataFrame, path: String) = {
-    df.write
+    df.coalesce(1)
+      .write
       .mode(SaveMode.Overwrite)
       .option("codec", "org.apache.hadoop.io.compress.GzipCodec")
+      .csv(path)
+  }
+
+  def dataframeToCsv(df: DataFrame, path: String) = {
+    df.write
+      .mode(SaveMode.Overwrite)
       .csv(path)
   }
 

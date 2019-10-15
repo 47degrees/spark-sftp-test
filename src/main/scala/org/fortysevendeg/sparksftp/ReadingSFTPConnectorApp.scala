@@ -7,6 +7,7 @@ import pureconfig.generic.auto._
 import org.apache.spark.SparkConf
 import org.fortysevendeg.sparksftp.common.SparkUtils._
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.IntegerType
 import org.fortysevendeg.sparksftp.common.{HiveUserData, SparkUtils}
 import org.fortysevendeg.sparksftp.config.model.configs.ReadingSFTPConfig
 import org.training.trainingbot.config.ConfigLoader
@@ -40,8 +41,18 @@ object ReadingSFTPConnectorApp extends IOApp {
       )
 
       // Sample operations to persist and query the Hive database
-      _                                        = HiveUserData.persistUserData(sparkSession, users, salaries)
-      (userDataFromHive, salariesDataFromHive, _) = HiveUserData.readUserData(sparkSession)
+      _ = HiveUserData.persistUserData(sparkSession, users, salaries)
+      (userDataFromHive, salariesDataFromHive, userSalaries) = HiveUserData.readUserData(
+        sparkSession
+      )
+
+      newSalaries = userSalaries.withColumn(
+        "new_salary",
+        (userSalaries("salary") * 1.1).cast(IntegerType)
+      )
+
+      _                       = SparkUtils.persistDataFrame(sparkSession, newSalaries, "user_new_salary")
+      userNewSalariesFromHive = sparkSession.sql("select name,salary from user_new_salary")
 
       // Write dataframe as CSV file to FTP server
       _ = dataframeToCompressedCsvWithSFTPConnector(
@@ -53,6 +64,12 @@ object ReadingSFTPConnectorApp extends IOApp {
         salariesDataFromHive,
         sftpConfig,
         s"${sftpConfig.sftpSalaryPath}_output"
+      )
+
+      _ = dataframeToCompressedCsvWithSFTPConnector(
+        userNewSalariesFromHive,
+        sftpConfig,
+        s"${sftpConfig.sftpSalaryPath}_transformed_output"
       )
 
     } yield ExitCode.Success
