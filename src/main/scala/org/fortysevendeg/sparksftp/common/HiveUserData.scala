@@ -30,14 +30,14 @@ object HiveUserData {
 
   def readUserData(sparkSession: SparkSession): (DataFrame, DataFrame, DataFrame) = {
     //Used to return the dataframe and show an excerpt in console
-    val userDataFromHive = sparkSession.sql("select name from user_data") //.repartition(8)
+    val userDataFromHive = sparkSession.sql("select name from user_data")
     userDataFromHive.show(false)
 
-    val salariesDataFromHive = sparkSession.sql("select ID,salary from salaries") //.repartition(8)
+    val salariesDataFromHive = sparkSession.sql("select ID,salary from salaries")
     salariesDataFromHive.show(false)
 
     //Excerpt from the joined table
-    val user_salaries = sparkSession.sql("select name,salary from user_salary") //.repartition(8)
+    val user_salaries = sparkSession.sql("select name,salary from user_salary")
     //.show(false)
 
     (userDataFromHive, salariesDataFromHive, user_salaries)
