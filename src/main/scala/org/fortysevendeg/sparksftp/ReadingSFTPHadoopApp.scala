@@ -34,12 +34,12 @@ object ReadingSFTPHadoopApp extends IOApp {
        */
       sparkSession = getSparkSessionWithHive(defaultSparkConf)
 
-      sftpConfig = configs.SFTPConfig
-        .configFromContextProperties(sparkSession.sparkContext, config.sftp)
+      readConfig = configs.ReadingSFTPConfig
+        .configFromContextProperties(sparkSession.sparkContext, config)
 
       // Read the source files from SFTP into dataframes
-      usersPath    = s"sftp://${sftpConfig.sftpUser}:${sftpConfig.sftpPass}@${sftpConfig.sftpHost}" + s":${sftpConfig.sftpUserPath}"
-      salariesPath = s"sftp://${sftpConfig.sftpUser}:${sftpConfig.sftpPass}@${sftpConfig.sftpHost}" + s":${sftpConfig.sftpSalaryPath}"
+      usersPath    = s"sftp://${readConfig.sftp.sftpUser}:${readConfig.sftp.sftpPass}@${readConfig.sftp.sftpHost}" + s":${readConfig.sftp.sftpUserPath}"
+      salariesPath = s"sftp://${readConfig.sftp.sftpUser}:${readConfig.sftp.sftpPass}@${readConfig.sftp.sftpHost}" + s":${readConfig.sftp.sftpSalaryPath}"
 
       users    = dataframeFromCSV(sparkSession, usersPath)
       salaries = dataframeFromCSV(sparkSession, salariesPath)

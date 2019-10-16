@@ -1,5 +1,6 @@
 package org.fortysevendeg.sparksftp.common
 
+import java.io.File
 import java.net.URI
 
 import org.apache.spark.SparkConf
@@ -9,12 +10,18 @@ import org.fortysevendeg.sparksftp.config.model.configs.{ReadingSFTPConfig, SFTP
 object SparkUtils {
 
   def createSparkConfWithSFTPSupport(config: ReadingSFTPConfig): SparkConf = {
+    val warehouseLocation = new File("/tmp/spark-warehouse").getAbsolutePath
     new SparkConf()
       .set("spark.serializer", config.spark.serializer)
       .set(
         "spark.kryo.registrationRequired",
         config.spark.serializer.contains("KryoSerializer").toString
       )
+      .set("spark.master", "local[*]")
+      //.set("hive.metastore.warehouse.dir", config.spark.storagePath)
+      .set("spark.sql.warehouse.dir", warehouseLocation)
+      .set("spark.sql.parquet.mergeSchema", "true")
+      .set("spark.sql.catalogImplementation", "hive")
       .set("spark.hadoop.fs.sftp.impl", "org.apache.hadoop.fs.sftp.SFTPFileSystem")
       .set("spark.sql.legacy.allowCreatingManagedTableUsingNonemptyLocation", "true") //https://kb.azuredatabricks.net/jobs/spark-overwrite-cancel.html
       .registerKryoClasses(RegisterInKryo.classes.toArray)
@@ -50,8 +57,11 @@ object SparkUtils {
     // Another option: externalTable (HDFS, Hive)
     // If we wanted to debug any issue with the databases, we could use this: sparkSession.sparkContext.setLogLevel("DEBUG")
     sparkSession.sql(s"DROP TABLE IF EXISTS ${name}")
-
+    println("########################")
+    println(sparkSession.sparkContext.getConf.get("spark.sql.warehouse.dir"))
+    //sparkSession.catalog.refreshTable(name)
     df.write
+      .option("path", sparkSession.sparkContext.getConf.get("spark.sql.warehouse.dir"))
       .mode(SaveMode.Overwrite)
       .partitionBy(partitionBy: _*)
       .format("parquet")

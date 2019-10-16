@@ -12,28 +12,35 @@ object configs {
       sftpSalaryPath: String
   )
 
-  final case class SparkConfig(partitions: Int, serializer: String)
+  final case class SparkConfig(partitions: Int, serializer: String, storagePath: String)
 
   final case class ReadingSFTPConfig(sftp: SFTPConfig, spark: SparkConfig)
 
-  object SFTPConfig {
-    def configFromContextProperties(sparkContext: SparkContext, config: SFTPConfig): SFTPConfig =
-      new SFTPConfig(
+  object ReadingSFTPConfig {
+    def configFromContextProperties(sparkContext: SparkContext, config: ReadingSFTPConfig): ReadingSFTPConfig =
+      config.copy(
+        sftp =  SFTPConfig(
         sftpUser = sparkContext.getConf
           .getOption("spark.executorEnv.SFTP_USER")
-          .getOrElse(config.sftpUser),
+          .getOrElse(config.sftp.sftpUser),
         sftpPass = sparkContext.getConf
           .getOption("spark.executorEnv.SFTP_PASS")
-          .getOrElse(config.sftpPass),
+          .getOrElse(config.sftp.sftpPass),
         sftpHost = sparkContext.getConf
           .getOption("spark.executorEnv.SFTP_HOST")
-          .getOrElse(config.sftpHost),
+          .getOrElse(config.sftp.sftpHost),
         sftpUserPath = sparkContext.getConf
           .getOption("spark.executorEnv.SFTP_USERS_PATH")
-          .getOrElse(config.sftpUserPath),
+          .getOrElse(config.sftp.sftpUserPath),
         sftpSalaryPath = sparkContext.getConf
           .getOption("spark.executorEnv.SFTP_SALARIES_PATH")
-          .getOrElse(config.sftpSalaryPath)
+          .getOrElse(config.sftp.sftpSalaryPath)
+      ),
+        spark = config.spark.copy(
+          storagePath = sparkContext.getConf
+              .getOption("spark.executorEnv.STORAGE_PATH")
+              .getOrElse(config.spark.storagePath)
+        )
       )
   }
 }

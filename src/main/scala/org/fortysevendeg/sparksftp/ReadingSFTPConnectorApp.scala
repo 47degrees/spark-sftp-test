@@ -28,16 +28,19 @@ object ReadingSFTPConnectorApp extends IOApp {
         .enableHiveSupport
         .getOrCreate()
 
-      sftpConfig = configs.SFTPConfig
-        .configFromContextProperties(sparkSession.sparkContext, config.sftp)
+      readConfig = configs.ReadingSFTPConfig
+        .configFromContextProperties(sparkSession.sparkContext, config)
+
+      _ = sparkSession.sparkContext.getConf.set("config.spark.storagePath", config.spark.storagePath)
+
 
       // Read the source files from SFTP into dataframes
-      users = dataframeFromCsvWithSFTPConnector(sparkSession, sftpConfig, sftpConfig.sftpUserPath)
+      users = dataframeFromCsvWithSFTPConnector(sparkSession, readConfig.sftp, readConfig.sftp.sftpUserPath)
         .repartition(8)
       salaries = dataframeFromCsvWithSFTPConnector(
         sparkSession,
-        sftpConfig,
-        sftpConfig.sftpSalaryPath
+        readConfig.sftp,
+        readConfig.sftp.sftpSalaryPath
       )
 
       // Sample operations to persist and query the Hive database
@@ -57,19 +60,19 @@ object ReadingSFTPConnectorApp extends IOApp {
       // Write dataframe as CSV file to FTP server
       _ = dataframeToCompressedCsvWithSFTPConnector(
         userDataFromHive,
-        sftpConfig,
-        s"${sftpConfig.sftpUserPath}_output"
+        readConfig.sftp,
+        s"${readConfig.sftp.sftpUserPath}_output"
       )
       _ = dataframeToCompressedCsvWithSFTPConnector(
         salariesDataFromHive,
-        sftpConfig,
-        s"${sftpConfig.sftpSalaryPath}_output"
+        readConfig.sftp,
+        s"${readConfig.sftp.sftpSalaryPath}_output"
       )
 
       _ = dataframeToCompressedCsvWithSFTPConnector(
         userNewSalariesFromHive,
-        sftpConfig,
-        s"${sftpConfig.sftpSalaryPath}_transformed_output"
+        readConfig.sftp,
+        s"${readConfig.sftp.sftpSalaryPath}_transformed_output"
       )
 
     } yield ExitCode.Success
