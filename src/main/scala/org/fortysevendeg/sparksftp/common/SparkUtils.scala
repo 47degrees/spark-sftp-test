@@ -11,10 +11,18 @@ object SparkUtils {
   def createSparkConfWithSFTPSupport(config: ReadingSFTPConfig): SparkConf = {
     new SparkConf()
       .set("spark.serializer", config.spark.serializer)
+      //.set("spark.master", "local[*]")
       .set(
         "spark.kryo.registrationRequired",
         config.spark.serializer.contains("KryoSerializer").toString
       )
+      .set("spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version", "2")
+      .set("spark.hadoop.mapreduce.fileoutputcommitter.cleanup-failures.ignored", "true")
+      //.set("spark.hadoop.parquet.enable.summary-metadata", "false")
+      .set("spark.hadoop.parquet.summary.metadata.level", "NONE") //Other option "ALL"
+      .set("spark.sql.parquet.mergeSchema", "false")
+      .set("spark.sql.parquet.filterPushdown", "true")
+      .set("spark.sql.hive.metastorePartitionPruning", "true")
       .set("spark.hadoop.fs.sftp.impl", "org.apache.hadoop.fs.sftp.SFTPFileSystem")
       .set("spark.sql.legacy.allowCreatingManagedTableUsingNonemptyLocation", "true") //https://kb.azuredatabricks.net/jobs/spark-overwrite-cancel.html
       .registerKryoClasses(RegisterInKryo.classes.toArray)
@@ -35,9 +43,12 @@ object SparkUtils {
     val sourceUri           = new URI(sftpUri)
 
     sparkSession.read
+      .format("csv")
+      .option("delimiter", ",")
       .option("header", first_row_is_header)
-      .option("inferSchema", inferSchema)
-      .csv(sourceUri.toString)
+       .option("inferSchema", inferSchema)
+      //.csv(sourceUri.toString)
+      .load(sourceUri.toString)
   }
 
   def persistDataFrame(
@@ -49,13 +60,20 @@ object SparkUtils {
     // Persist the dataframes into Hive tables with parquet file format, the default compression for parquet is snappy, that is splittable for parquet.
     // Another option: externalTable (HDFS, Hive)
     // If we wanted to debug any issue with the databases, we could use this: sparkSession.sparkContext.setLogLevel("DEBUG")
+
+    sparkSession.sql("CREATE DATABASE IF NOT EXISTS default")
+
     sparkSession.sql(s"DROP TABLE IF EXISTS ${name}")
 
     df.write
       .mode(SaveMode.Overwrite)
       .partitionBy(partitionBy: _*)
+      //.parquet(name)
       .format("parquet")
       .saveAsTable(name)
+
+    sparkSession.sql("describe database default").show
+
   }
 
   def dataframeToCompressedCsv(df: DataFrame, path: String) = {
