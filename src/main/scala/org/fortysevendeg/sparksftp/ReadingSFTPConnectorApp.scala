@@ -33,7 +33,6 @@ object ReadingSFTPConnectorApp extends IOApp {
 
       // Read the source files from SFTP into dataframes
       users = dataframeFromCsvWithSFTPConnector(sparkSession, sftpConfig, sftpConfig.sftpUserPath)
-        .repartition(8)
       salaries = dataframeFromCsvWithSFTPConnector(
         sparkSession,
         sftpConfig,
